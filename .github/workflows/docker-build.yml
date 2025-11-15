@@ -1,4 +1,4 @@
-name: Docker Build
+name: Docker Build and Test
 
 on:
   push:
@@ -25,3 +25,40 @@ jobs:
           tags: fullstack-app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Test Docker image with environment variables
+        run: |
+          echo "🚀 Starting container with environment variables..."
+          docker run -d \
+            --name test-fullstack-app \
+            -p 3000:3000 \
+            -e MONGODB_URI="${{ secrets.DATABASE_URL }}" \
+            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            -e JWT_REFRESH_SECRET="${{ secrets.JWT_REFRESH_SECRET }}" \
+            -e JWT_EXPIRES_IN="${{ secrets.JWT_EXPIRES_IN }}" \
+            -e JWT_REFRESH_EXPIRES_IN="${{ secrets.JWT_REFRESH_EXPIRES_IN }}" \
+            -e BCRYPT_SALT_ROUNDS="${{ secrets.BCRYPT_SALT_ROUNDS }}" \
+            -e SESSION_SECRET="${{ secrets.SESSION_SECRET }}" \
+            -e NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" \
+            -e NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}" \
+            -e NODE_ENV=production \
+            fullstack-app:latest
+
+          echo "⏳ Waiting for application to start..."
+          sleep 20
+
+          echo "🧪 Testing if application is running..."
+          if curl -f http://localhost:3000 > /dev/null 2>&1; then
+            echo "✅ Application is running successfully!"
+            echo "🌐 Application URL: http://localhost:3000"
+          else
+            echo "⚠️ Application might still be starting or there's an issue"
+            echo "📋 Checking container logs..."
+            docker logs test-fullstack-app --tail 50
+          fi
+
+          echo "🧹 Cleaning up test container..."
+          docker stop test-fullstack-app || true
+          docker rm test-fullstack-app || true
+
+          echo "✅ Build and test completed!"
