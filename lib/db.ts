@@ -6,13 +6,8 @@
 import mongoose from "mongoose";
 import { dbConfig } from "@/lib/config";
 
-const MONGODB_URI = dbConfig.mongodbUri || dbConfig.url;
-
-if (!MONGODB_URI) {
-  throw new Error(
-    "Please define MONGODB_URI or DATABASE_URL in your .env file"
-  );
-}
+// Don't check MONGODB_URI at module load time (allows build to succeed)
+// Will check when connectDB() is actually called
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -40,6 +35,15 @@ if (!cached) {
 }
 
 async function connectDB() {
+  // Check MONGODB_URI when actually connecting (not at module load)
+  const MONGODB_URI = dbConfig.mongodbUri || dbConfig.url;
+
+  if (!MONGODB_URI) {
+    throw new Error(
+      "Please define MONGODB_URI or DATABASE_URL in your .env file"
+    );
+  }
+
   if (cached!.conn) {
     return cached!.conn;
   }
