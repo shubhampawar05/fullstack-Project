@@ -1,22 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project with full-stack authentication setup.
 
-## Getting Started
+## 🚀 Quick Start
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+**Required variables:**
+
+- `MONGODB_URI` - Your MongoDB connection string
+- `JWT_SECRET` - Secret key for JWT tokens (generate with `openssl rand -base64 32`)
+- `JWT_REFRESH_SECRET` - Secret key for refresh tokens
+
+### 3. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**That's it!** Both frontend and backend run on the same server. No separate backend needed!
+
+## 📁 Project Structure
+
+```
+frontend/
+├── app/
+│   ├── api/              # Backend API routes (Next.js API Routes)
+│   │   └── auth/        # Authentication endpoints
+│   ├── (auth)/          # Auth pages (login, signup)
+│   └── home/            # Protected home page
+├── components/           # React components
+├── lib/                 # Utilities (db, jwt, auth, config)
+├── models/              # MongoDB models
+└── types/               # TypeScript types
+```
+
+## 🔑 Features
+
+- ✅ **Full-stack authentication** with JWT (access + refresh tokens)
+- ✅ **Password hashing** with bcrypt
+- ✅ **MongoDB** integration with Mongoose
+- ✅ **Cookie-based** token storage (httpOnly, secure)
+- ✅ **Type-safe** with TypeScript
+- ✅ **shadcn/ui** components
+- ✅ **Form validation** with Zod + react-hook-form
+
+## 📚 Backend Architecture
+
+**No separate backend server needed!** Next.js API routes handle everything.
+
+- API routes in `app/api/` become backend endpoints
+- Everything runs on one port (3000)
+- See `BACKEND_GUIDE.md` for detailed explanation
+
+## 🛠️ Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run type-check` - Check TypeScript types
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
