@@ -5,6 +5,11 @@
  * Usage: npx tsx scripts/seed-categories.ts
  */
 
+// Load environment variables from .env file
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.join(process.cwd(), ".env") });
+
 import connectDB from "../lib/db";
 import Category from "../models/Category";
 

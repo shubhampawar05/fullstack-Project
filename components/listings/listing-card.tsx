@@ -22,7 +22,9 @@ export function ListingCard({ listing }: ListingCardProps) {
   };
 
   const getTypeColor = (type: string) => {
-    return type === "item" ? "bg-blue-500/10 text-blue-700 dark:text-blue-400" : "bg-purple-500/10 text-purple-700 dark:text-purple-400";
+    return type === "item"
+      ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+      : "bg-purple-500/10 text-purple-700 dark:text-purple-400";
   };
 
   const getTypeIcon = (type: string) => {
@@ -46,11 +48,12 @@ export function ListingCard({ listing }: ListingCardProps) {
               {getTypeIcon(listing.type)}
             </div>
           )}
-          
+
           {/* Type Badge */}
           <div className="absolute top-2 left-2">
             <Badge className={getTypeColor(listing.type)}>
-              {getTypeIcon(listing.type)} {listing.type === "item" ? "Item" : "Service"}
+              {getTypeIcon(listing.type)}{" "}
+              {listing.type === "item" ? "Item" : "Service"}
             </Badge>
           </div>
 
@@ -110,4 +113,3 @@ export function ListingCard({ listing }: ListingCardProps) {
     </Link>
   );
 }
-

@@ -9,13 +9,14 @@ import connectDB from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     await connectDB();
 
+    const { userId } = await params;
     const profile = await UserProfile.findOne({
-      userId: params.userId,
+      userId,
     })
       .select("-phone") // Don't expose phone number in public profile
       .lean()

@@ -22,7 +22,7 @@ export default function ListingsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  
+
   // Filters
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -48,7 +48,7 @@ export default function ListingsPage() {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      
+
       if (selectedCategory !== "all") {
         params.append("category", selectedCategory);
       }
@@ -60,7 +60,9 @@ export default function ListingsPage() {
       }
       params.append("sortBy", sortBy);
 
-      const response = await authenticatedFetch(`/api/listings?${params.toString()}`);
+      const response = await authenticatedFetch(
+        `/api/listings?${params.toString()}`
+      );
       const data = await apiJson<ListingResponse>(response);
       setListings(data.listings || []);
     } catch (error) {
@@ -136,8 +138,13 @@ export default function ListingsPage() {
 
                 {/* Category Filter */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Category</label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <label className="text-sm font-medium mb-2 block">
+                    Category
+                  </label>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -154,7 +161,9 @@ export default function ListingsPage() {
 
                 {/* Sort */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Sort By</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Sort By
+                  </label>
                   <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger>
                       <SelectValue />
@@ -162,8 +171,12 @@ export default function ListingsPage() {
                     <SelectContent>
                       <SelectItem value="newest">Newest First</SelectItem>
                       <SelectItem value="oldest">Oldest First</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="price-low">
+                        Price: Low to High
+                      </SelectItem>
+                      <SelectItem value="price-high">
+                        Price: High to Low
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -177,10 +190,12 @@ export default function ListingsPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold">
-                  {listings.length} {listings.length === 1 ? "Listing" : "Listings"}
+                  {listings.length}{" "}
+                  {listings.length === 1 ? "Listing" : "Listings"}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {selectedCategory !== "all" && `Filtered by: ${selectedCategory}`}
+                  {selectedCategory !== "all" &&
+                    `Filtered by: ${selectedCategory}`}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -210,7 +225,9 @@ export default function ListingsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <div className="text-6xl mb-4">🔍</div>
-                  <h3 className="text-xl font-semibold mb-2">No listings found</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    No listings found
+                  </h3>
                   <p className="text-muted-foreground">
                     Try adjusting your filters or create a new listing
                   </p>
@@ -235,4 +252,3 @@ export default function ListingsPage() {
     </div>
   );
 }
-

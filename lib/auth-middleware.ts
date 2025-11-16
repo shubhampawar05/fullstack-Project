@@ -181,3 +181,87 @@ async function refreshAndRetry(
     };
   }
 }
+
+/**
+ * Get current authenticated user
+ * Simplified helper for routes that need user info
+ */
+export async function getCurrentUser(): Promise<{ id: string; email: string } | null> {
+  try {
+    await connectDB();
+
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    if (!accessToken) {
+      return null;
+    }
+
+    // Try to verify access token
+    let payload: TokenPayload;
+    try {
+      payload = verifyAccessToken(accessToken);
+    } catch (error) {
+      // Access token expired - try refresh token
+      const refreshToken = cookieStore.get("refreshToken")?.value;
+      if (!refreshToken) {
+        return null;
+      }
+
+      try {
+        const refreshPayload = verifyRefreshToken(refreshToken);
+        const user = await User.findById(refreshPayload.userId);
+        if (!user) {
+          return null;
+        }
+
+        // Generate new tokens
+        const newTokenPayload: TokenPayload = {
+          userId: String(user._id),
+          email: user.email,
+        };
+
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+          generateTokenPair(newTokenPayload);
+
+        // Set new cookies
+        cookieStore.set("accessToken", newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: authConfig.jwtExpiresIn,
+          path: "/",
+        });
+
+        cookieStore.set("refreshToken", newRefreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: authConfig.jwtRefreshExpiresIn,
+          path: "/",
+        });
+
+        return {
+          id: String(user._id),
+          email: user.email,
+        };
+      } catch (refreshError) {
+        return null;
+      }
+    }
+
+    // Get user from database
+    const user = await User.findById(payload.userId);
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: String(user._id),
+      email: user.email,
+    };
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
+}

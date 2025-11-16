@@ -36,7 +36,8 @@ if (!cached) {
 
 async function connectDB() {
   // Check MONGODB_URI when actually connecting (not at module load)
-  const MONGODB_URI = dbConfig.mongodbUri || dbConfig.url;
+  // Also check process.env directly in case config was loaded before dotenv
+  const MONGODB_URI = dbConfig.mongodbUri || dbConfig.url || process.env.MONGODB_URI || process.env.DATABASE_URL;
 
   if (!MONGODB_URI) {
     throw new Error(

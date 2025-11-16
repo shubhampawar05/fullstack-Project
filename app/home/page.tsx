@@ -10,7 +10,13 @@ import { Listing, ListingResponse } from "@/types/listing";
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingForm } from "@/components/listings/listing-form";
 import { Plus, LogOut, Package, TrendingUp, Users } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function HomePage() {
   const router = useRouter();
@@ -35,10 +41,14 @@ export default function HomePage() {
       setLoading(true);
       // Get current user first, then fetch their listings
       const profileResponse = await authenticatedFetch("/api/profile");
-      const profileData = await apiJson<{ profile: { userId: string } }>(profileResponse);
-      
+      const profileData = await apiJson<{ profile: { userId: string } }>(
+        profileResponse
+      );
+
       if (profileData.profile?.userId) {
-        const response = await authenticatedFetch(`/api/listings/user/${profileData.profile.userId}?limit=6`);
+        const response = await authenticatedFetch(
+          `/api/listings/user/${profileData.profile.userId}?limit=6`
+        );
         const data = await apiJson<ListingResponse>(response);
         setMyListings(data.listings || []);
       }
@@ -72,7 +82,9 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">LocalConnect</h1>
-                <p className="text-xs text-muted-foreground">Your Community Marketplace</p>
+                <p className="text-xs text-muted-foreground">
+                  Your Community Marketplace
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -87,7 +99,10 @@ export default function HomePage() {
                   <DialogHeader>
                     <DialogTitle>Create New Listing</DialogTitle>
                   </DialogHeader>
-                  <ListingForm onSuccess={handleListingCreated} onCancel={() => setShowCreateForm(false)} />
+                  <ListingForm
+                    onSuccess={handleListingCreated}
+                    onCancel={() => setShowCreateForm(false)}
+                  />
                 </DialogContent>
               </Dialog>
               <Button variant="ghost" size="icon" onClick={handleLogout}>
@@ -106,13 +121,18 @@ export default function HomePage() {
               Welcome to Your Marketplace
             </h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Connect with your community. Buy, sell, and discover amazing items and services.
+              Connect with your community. Buy, sell, and discover amazing items
+              and services.
             </p>
             <div className="flex gap-3">
               <Button size="lg" onClick={() => router.push("/listings")}>
                 Browse Listings
               </Button>
-              <Button size="lg" variant="outline" onClick={() => setShowCreateForm(true)}>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setShowCreateForm(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Sell Something
               </Button>
@@ -145,7 +165,9 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">Active</p>
-                  <p className="text-sm text-muted-foreground">Marketplace Status</p>
+                  <p className="text-sm text-muted-foreground">
+                    Marketplace Status
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -158,7 +180,9 @@ export default function HomePage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">Community</p>
-                  <p className="text-sm text-muted-foreground">Local Connections</p>
+                  <p className="text-sm text-muted-foreground">
+                    Local Connections
+                  </p>
                 </div>
               </div>
             </CardContent>

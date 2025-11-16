@@ -13,12 +13,13 @@ import connectDB from "@/lib/db";
 // GET /api/listings/[id] - Get single listing
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const listing = await Listing.findById(params.id).lean().exec();
+    const { id } = await params;
+    const listing = await Listing.findById(id).lean().exec();
 
     if (!listing) {
       return NextResponse.json(
@@ -28,7 +29,7 @@ export async function GET(
     }
 
     // Increment view count
-    await Listing.findByIdAndUpdate(params.id, {
+    await Listing.findByIdAndUpdate(id, {
       $inc: { views: 1 },
     }).exec();
 
@@ -51,11 +52,12 @@ export async function GET(
 // PATCH /api/listings/[id] - Update listing
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json(
@@ -65,7 +67,7 @@ export async function PATCH(
     }
 
     // Check if listing exists and belongs to user
-    const existingListing = await Listing.findById(params.id).exec();
+    const existingListing = await Listing.findById(id).exec();
     if (!existingListing) {
       return NextResponse.json(
         { success: false, error: "Listing not found" },
@@ -101,7 +103,7 @@ export async function PATCH(
     }
 
     const listing = await Listing.findByIdAndUpdate(
-      params.id,
+      id,
       { $set: updateData },
       { new: true, runValidators: true }
     ).exec();
@@ -122,11 +124,12 @@ export async function PATCH(
 // DELETE /api/listings/[id] - Delete listing
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json(
@@ -136,7 +139,7 @@ export async function DELETE(
     }
 
     // Check if listing exists and belongs to user
-    const listing = await Listing.findById(params.id).exec();
+    const listing = await Listing.findById(id).exec();
     if (!listing) {
       return NextResponse.json(
         { success: false, error: "Listing not found" },
@@ -151,7 +154,7 @@ export async function DELETE(
       );
     }
 
-    await Listing.findByIdAndDelete(params.id).exec();
+    await Listing.findByIdAndDelete(id).exec();
 
     return NextResponse.json({
       success: true,

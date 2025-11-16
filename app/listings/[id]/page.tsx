@@ -7,7 +7,15 @@ import { Listing, ListingResponse } from "@/types/listing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Eye, Heart, DollarSign, ArrowLeft, MessageCircle, Share2 } from "lucide-react";
+import {
+  MapPin,
+  Eye,
+  Heart,
+  DollarSign,
+  ArrowLeft,
+  MessageCircle,
+  Share2,
+} from "lucide-react";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 
@@ -73,11 +81,7 @@ export default function ListingDetailPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="mb-6"
-        >
+        <Button variant="ghost" onClick={() => router.back()} className="mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
@@ -111,16 +115,24 @@ export default function ListingDetailPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant={listing.type === "item" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          listing.type === "item" ? "default" : "secondary"
+                        }
+                      >
                         {listing.type === "item" ? "📦 Item" : "🛠️ Service"}
                       </Badge>
                       <Badge variant="outline">{listing.category}</Badge>
                     </div>
-                    <CardTitle className="text-3xl mb-2">{listing.title}</CardTitle>
+                    <CardTitle className="text-3xl mb-2">
+                      {listing.title}
+                    </CardTitle>
                     <div className="flex items-center gap-4 text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
-                        <span>{listing.location.city}, {listing.location.state}</span>
+                        <span>
+                          {listing.location.city}, {listing.location.state}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Eye className="h-4 w-4" />
@@ -163,13 +175,19 @@ export default function ListingDetailPage() {
                 <div className="pt-4 border-t space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Status</span>
-                    <Badge variant={listing.status === "active" ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        listing.status === "active" ? "default" : "secondary"
+                      }
+                    >
                       {listing.status}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Listed</span>
-                    <span>{new Date(listing.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(listing.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -180,4 +198,3 @@ export default function ListingDetailPage() {
     </div>
   );
 }
-

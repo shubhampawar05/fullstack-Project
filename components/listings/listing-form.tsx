@@ -36,10 +36,7 @@ const listingSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(2000),
-  price: z
-    .number()
-    .min(0, "Price must be positive")
-    .or(z.string().transform((val) => parseFloat(val) || 0)),
+  price: z.coerce.number().min(0, "Price must be positive"),
   category: z.string().min(1, "Category is required"),
   location: z.object({
     city: z.string().min(1, "City is required"),
@@ -60,7 +57,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
-  const form = useForm<ListingFormValues>({
+  const form = useForm({
     resolver: zodResolver(listingSchema),
     defaultValues: {
       type: "item",
@@ -101,7 +98,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
         type: data.type as ListingType,
         title: data.title.trim(),
         description: data.description.trim(),
-        price: typeof data.price === "string" ? parseFloat(data.price) : data.price,
+        price: data.price,
         category: data.category,
         location: {
           city: data.location.city.trim(),
@@ -141,10 +138,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Listing Type *</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select type" />
@@ -184,9 +178,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
                   {...field}
                 />
               </FormControl>
-              <FormDescription>
-                Be specific and descriptive
-              </FormDescription>
+              <FormDescription>Be specific and descriptive</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -261,8 +253,17 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
                     className="h-11"
                     step="0.01"
                     min="0"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === ""
+                          ? 0
+                          : parseFloat(e.target.value) || 0;
+                      field.onChange(value);
+                    }}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
                   />
                 </FormControl>
                 <FormMessage />
@@ -281,11 +282,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      placeholder="City"
-                      className="h-11"
-                      {...field}
-                    />
+                    <Input placeholder="City" className="h-11" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -298,11 +295,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      placeholder="State"
-                      className="h-11"
-                      {...field}
-                    />
+                    <Input placeholder="State" className="h-11" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -315,11 +308,7 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      placeholder="Zip Code"
-                      className="h-11"
-                      {...field}
-                    />
+                    <Input placeholder="Zip Code" className="h-11" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -364,4 +353,3 @@ export function ListingForm({ onSuccess, onCancel }: ListingFormProps) {
     </Form>
   );
 }
-

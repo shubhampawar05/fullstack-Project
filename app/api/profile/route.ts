@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       });
 
       await newProfile.save();
-      profile = newProfile.toObject();
+      profile = await UserProfile.findById(newProfile._id).lean().exec();
     }
 
     return NextResponse.json({

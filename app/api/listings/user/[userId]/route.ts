@@ -9,18 +9,19 @@ import connectDB from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     await connectDB();
 
+    const { userId } = await params;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Build query
-    const query: any = { userId: params.userId };
+    const query: any = { userId };
     if (status) query.status = status;
 
     // Calculate pagination
