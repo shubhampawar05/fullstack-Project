@@ -12,13 +12,13 @@ import {
 } from "@/lib/jwt";
 import { authConfig } from "@/lib/config";
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import User, { IUser } from "@/models/User";
 import { TokenPayload } from "@/lib/jwt";
 
 export interface AuthenticatedRequest {
   userId: string;
   email: string;
-  user: Awaited<ReturnType<typeof User.findById>>;
+  user: IUser;
 }
 
 /**
@@ -70,12 +70,14 @@ export async function authenticateRequest(
       };
     }
 
+    const userDoc = user as IUser;
+
     return {
       success: true,
       data: {
-        userId: String(user._id),
-        email: user.email,
-        user,
+        userId: String(userDoc._id),
+        email: userDoc.email,
+        user: userDoc,
       },
     };
   } catch (error) {
@@ -134,10 +136,13 @@ async function refreshAndRetry(
       };
     }
 
+    const userDoc = user as IUser;
+
     // Generate new tokens
     const newTokenPayload: TokenPayload = {
-      userId: String(user._id),
-      email: user.email,
+      userId: String(userDoc._id),
+      email: userDoc.email,
+      role: userDoc.role,
     };
 
     const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
@@ -163,9 +168,9 @@ async function refreshAndRetry(
     return {
       success: true,
       data: {
-        userId: String(user._id),
-        email: user.email,
-        user,
+        userId: String(userDoc._id),
+        email: userDoc.email,
+        user: userDoc,
       },
     };
   } catch (error) {
@@ -215,10 +220,13 @@ export async function getCurrentUser(): Promise<{ id: string; email: string } | 
           return null;
         }
 
+        const userDoc = user as IUser;
+
         // Generate new tokens
         const newTokenPayload: TokenPayload = {
-          userId: String(user._id),
-          email: user.email,
+          userId: String(userDoc._id),
+          email: userDoc.email,
+          role: userDoc.role,
         };
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
@@ -242,8 +250,8 @@ export async function getCurrentUser(): Promise<{ id: string; email: string } | 
         });
 
         return {
-          id: String(user._id),
-          email: user.email,
+          id: String(userDoc._id),
+          email: userDoc.email,
         };
       } catch (refreshError) {
         return null;
@@ -256,9 +264,11 @@ export async function getCurrentUser(): Promise<{ id: string; email: string } | 
       return null;
     }
 
+    const userDoc = user as IUser;
+
     return {
-      id: String(user._id),
-      email: user.email,
+      id: String(userDoc._id),
+      email: userDoc.email,
     };
   } catch (error) {
     console.error("Error getting current user:", error);

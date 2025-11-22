@@ -6,7 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
   Container,
@@ -40,9 +40,13 @@ import InvitationForm from "@/components/invitations/invitation-form";
 import UserList from "@/components/users/user-list";
 import CompanySettingsForm from "@/components/company/company-settings-form";
 import EmployeeList from "@/components/employees/employee-list";
+import JobList from "@/components/recruitment/job-list";
+import CandidateList from "@/components/recruitment/candidate-list";
+import InterviewList from "@/components/recruitment/interview-list";
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
@@ -58,6 +62,14 @@ export default function AdminDashboard() {
   });
   const [activeSection, setActiveSection] = useState<string>("overview");
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Check URL params to set active section
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section && ["invitations", "users", "settings", "employees", "recruitment"].includes(section)) {
+      setActiveSection(section);
+    }
+  }, [searchParams]);
 
   const fetchCompany = async () => {
     try {
@@ -110,6 +122,42 @@ export default function AdminDashboard() {
             pendingInvitations: invitations.filter(
               (inv: any) => inv.status === "pending"
             ).length,
+          }));
+        }
+      }
+
+      // Fetch all jobs (not closed or cancelled)
+      const jobsResponse = await fetch("/api/jobs", {
+        credentials: "include",
+      });
+      if (jobsResponse.ok) {
+        const jobsData = await jobsResponse.json();
+        if (jobsData.success) {
+          // Count active jobs (published and draft, excluding closed and cancelled)
+          const activeJobs = jobsData.jobs?.filter(
+            (job: any) => job.status === "published" || job.status === "draft"
+          ).length || 0;
+          setStats((prev) => ({
+            ...prev,
+            activeJobs,
+          }));
+        } else {
+          console.error("Failed to fetch jobs:", jobsData.message);
+        }
+      } else {
+        console.error("Jobs API error:", jobsResponse.status, jobsResponse.statusText);
+      }
+
+      // Fetch candidates
+      const candidatesResponse = await fetch("/api/candidates", {
+        credentials: "include",
+      });
+      if (candidatesResponse.ok) {
+        const candidatesData = await candidatesResponse.json();
+        if (candidatesData.success) {
+          setStats((prev) => ({
+            ...prev,
+            totalCandidates: candidatesData.candidates?.length || 0,
           }));
         }
       }
@@ -220,6 +268,58 @@ export default function AdminDashboard() {
             <Business sx={{ fontSize: 64, opacity: 0.3 }} />
           </Box>
         </Paper>
+
+        {/* Seed Data Button (Development Only) */}
+        {activeSection === "overview" && (
+          <Paper
+            sx={{
+              p: 2,
+              mb: 3,
+              bgcolor: "info.light",
+              color: "info.contrastText",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="body2">
+                Need sample data? Click the button below to seed the database with
+                dummy recruitment data.
+              </Typography>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/seed/recruitment", {
+                      method: "POST",
+                      credentials: "include",
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                      alert(
+                        `Successfully seeded:\n- ${data.data.jobs} jobs\n- ${data.data.candidates} candidates\n- ${data.data.interviews} interviews`
+                      );
+                      fetchStats();
+                      window.location.reload();
+                    } else {
+                      alert(`Error: ${data.message}`);
+                    }
+                  } catch (error) {
+                    alert("Failed to seed data. Please try again.");
+                  }
+                }}
+                sx={{ ml: 2 }}
+              >
+                Seed Dummy Data
+              </Button>
+            </Box>
+          </Paper>
+        )}
 
         {/* Overview Section */}
         {activeSection === "overview" && (
@@ -759,14 +859,95 @@ export default function AdminDashboard() {
           </Box>
         )}
 
+        {/* Recruitment Section */}
+        {activeSection === "recruitment" && (
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 3,
+              }}
+            >
+              <Typography variant="h5" fontWeight={600}>
+                Recruitment Management
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={<ArrowForward />}
+                onClick={() => setActiveSection("overview")}
+              >
+                Back to Overview
+              </Button>
+            </Box>
+            <Paper sx={{ p: 2, mb: 3, bgcolor: "info.light", color: "info.contrastText" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body2">
+                  Need sample data? Click the button below to seed the database with
+                  dummy recruitment data.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="inherit"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch("/api/seed/recruitment", {
+                        method: "POST",
+                        credentials: "include",
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        alert(
+                          `Successfully seeded:\n- ${data.data.jobs} jobs\n- ${data.data.candidates} candidates\n- ${data.data.interviews} interviews`
+                        );
+                        fetchStats();
+                        window.location.reload();
+                      } else {
+                        alert(`Error: ${data.message}`);
+                      }
+                    } catch (error) {
+                      alert("Failed to seed data. Please try again.");
+                    }
+                  }}
+                  sx={{ ml: 2 }}
+                >
+                  Seed Dummy Data
+                </Button>
+              </Box>
+            </Paper>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+              <Button
+                variant={activeSection === "recruitment" ? "contained" : "text"}
+                onClick={() => router.push("/dashboard/recruiter")}
+                sx={{ mr: 2 }}
+              >
+                Go to Recruiter Dashboard
+              </Button>
+            </Box>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              For full recruitment features, please visit the{" "}
+              <Button
+                variant="text"
+                onClick={() => router.push("/dashboard/recruiter")}
+                sx={{ textTransform: "none" }}
+              >
+                Recruiter Dashboard
+              </Button>
+            </Typography>
+          </Box>
+        )}
+
         {/* Other Sections - Placeholders */}
-        {[
-          "recruitment",
-          "reports",
-          "payroll",
-          "attendance",
-          "departments",
-        ].includes(activeSection) && (
+        {["reports", "payroll", "attendance", "departments"].includes(
+          activeSection
+        ) && (
           <Box>
             <Box
               sx={{

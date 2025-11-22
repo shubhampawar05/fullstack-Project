@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -17,26 +17,94 @@ import {
   CardContent,
   CircularProgress,
   Button,
+  Tabs,
+  Tab,
 } from "@mui/material";
-import {
-  Work,
-  People,
-  Schedule,
-  TrendingUp,
-  Add,
-} from "@mui/icons-material";
+import { Work, People, Schedule, TrendingUp } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
+import JobList from "@/components/recruitment/job-list";
+import CandidateList from "@/components/recruitment/candidate-list";
+import InterviewList from "@/components/recruitment/interview-list";
 
 export default function RecruiterDashboard() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [userRole, setUserRole] = useState<string>("");
+  const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState({
     activeJobs: 0,
     totalCandidates: 0,
     interviewsScheduled: 0,
     offersPending: 0,
   });
+
+  const fetchStats = useCallback(async () => {
+    try {
+      // Fetch all jobs (not closed or cancelled)
+      const jobsResponse = await fetch("/api/jobs", {
+        credentials: "include",
+      });
+      if (jobsResponse.ok) {
+        const jobsData = await jobsResponse.json();
+        if (jobsData.success) {
+          // Count active jobs (published and draft, excluding closed and cancelled)
+          const activeJobs =
+            jobsData.jobs?.filter(
+              (job: any) => job.status === "published" || job.status === "draft"
+            ).length || 0;
+          setStats((prev) => ({
+            ...prev,
+            activeJobs,
+          }));
+        } else {
+          console.error("Failed to fetch jobs:", jobsData.message);
+        }
+      } else {
+        console.error(
+          "Jobs API error:",
+          jobsResponse.status,
+          jobsResponse.statusText
+        );
+      }
+
+      // Fetch candidates
+      const candidatesResponse = await fetch("/api/candidates", {
+        credentials: "include",
+      });
+      if (candidatesResponse.ok) {
+        const candidatesData = await candidatesResponse.json();
+        if (candidatesData.success) {
+          setStats((prev) => ({
+            ...prev,
+            totalCandidates: candidatesData.candidates?.length || 0,
+            offersPending:
+              candidatesData.candidates?.filter(
+                (c: any) => c.status === "offer"
+              ).length || 0,
+          }));
+        }
+      }
+
+      // Fetch interviews
+      const interviewsResponse = await fetch(
+        "/api/interviews?status=scheduled",
+        {
+          credentials: "include",
+        }
+      );
+      if (interviewsResponse.ok) {
+        const interviewsData = await interviewsResponse.json();
+        if (interviewsData.success) {
+          setStats((prev) => ({
+            ...prev,
+            interviewsScheduled: interviewsData.interviews?.length || 0,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  }, []);
 
   // Check authentication on mount
   useEffect(() => {
@@ -68,6 +136,7 @@ export default function RecruiterDashboard() {
 
         setUserRole(data.user.role);
         setCheckingAuth(false);
+        fetchStats();
       } catch (error) {
         console.error("Auth check error:", error);
         router.push("/login");
@@ -75,7 +144,7 @@ export default function RecruiterDashboard() {
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, fetchStats]);
 
   // Show loading while checking auth
   if (checkingAuth) {
@@ -111,9 +180,19 @@ export default function RecruiterDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Active Jobs
                     </Typography>
                     <Typography variant="h4">{stats.activeJobs}</Typography>
@@ -127,12 +206,24 @@ export default function RecruiterDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Total Candidates
                     </Typography>
-                    <Typography variant="h4">{stats.totalCandidates}</Typography>
+                    <Typography variant="h4">
+                      {stats.totalCandidates}
+                    </Typography>
                   </Box>
                   <People sx={{ fontSize: 40, color: "info.main" }} />
                 </Box>
@@ -143,12 +234,24 @@ export default function RecruiterDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Interviews Scheduled
                     </Typography>
-                    <Typography variant="h4">{stats.interviewsScheduled}</Typography>
+                    <Typography variant="h4">
+                      {stats.interviewsScheduled}
+                    </Typography>
                   </Box>
                   <Schedule sx={{ fontSize: 40, color: "warning.main" }} />
                 </Box>
@@ -159,9 +262,19 @@ export default function RecruiterDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Offers Pending
                     </Typography>
                     <Typography variant="h4">{stats.offersPending}</Typography>
@@ -173,49 +286,74 @@ export default function RecruiterDashboard() {
           </Grid>
         </Grid>
 
-        {/* Quick Actions */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Quick Actions
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                    },
-                  }}
-                >
-                  Post New Job
-                </Button>
-                <Button variant="outlined">
-                  View Candidates
-                </Button>
-                <Button variant="outlined">
-                  Schedule Interview
-                </Button>
-              </Box>
-            </Paper>
-          </Grid>
+        {/* Seed Data Button (Development Only) */}
+        <Paper
+          sx={{
+            p: 2,
+            mb: 3,
+            bgcolor: "info.light",
+            color: "info.contrastText",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="body2">
+              Need sample data? Click the button below to seed the database with
+              dummy recruitment data.
+            </Typography>
+            <Button
+              variant="contained"
+              color="inherit"
+              onClick={async () => {
+                try {
+                  const response = await fetch("/api/seed/recruitment", {
+                    method: "POST",
+                    credentials: "include",
+                  });
+                  const data = await response.json();
+                  if (data.success) {
+                    alert(
+                      `Successfully seeded:\n- ${data.data.jobs} jobs\n- ${data.data.candidates} candidates\n- ${data.data.interviews} interviews`
+                    );
+                    fetchStats();
+                    window.location.reload();
+                  } else {
+                    alert(`Error: ${data.message}`);
+                  }
+                } catch (error) {
+                  alert("Failed to seed data. Please try again.");
+                }
+              }}
+              sx={{ ml: 2 }}
+            >
+              Seed Dummy Data
+            </Button>
+          </Box>
+        </Paper>
 
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Upcoming Interviews
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                No upcoming interviews scheduled.
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
+        {/* Tabs for different sections */}
+        <Paper sx={{ mb: 3 }}>
+          <Tabs
+            value={activeTab}
+            onChange={(_, newValue) => setActiveTab(newValue)}
+            sx={{ borderBottom: 1, borderColor: "divider" }}
+          >
+            <Tab icon={<Work />} iconPosition="start" label="Job Postings" />
+            <Tab icon={<People />} iconPosition="start" label="Candidates" />
+            <Tab icon={<Schedule />} iconPosition="start" label="Interviews" />
+          </Tabs>
+        </Paper>
+
+        {/* Tab Content */}
+        {activeTab === 0 && <JobList onRefresh={fetchStats} />}
+        {activeTab === 1 && <CandidateList onRefresh={fetchStats} />}
+        {activeTab === 2 && <InterviewList onRefresh={fetchStats} />}
       </Container>
     </DashboardLayout>
   );
 }
-

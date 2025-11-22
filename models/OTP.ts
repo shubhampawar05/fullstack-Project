@@ -16,6 +16,9 @@ export interface IOTP extends Document {
   verified: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Methods
+  isExpired(): boolean;
+  isValid(): boolean;
 }
 
 const OTPSchema: Schema = new Schema(

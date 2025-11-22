@@ -247,9 +247,9 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      icon={getStatusIcon(invitation.status)}
+                      icon={getStatusIcon(invitation.status) as any}
                       label={invitation.status}
-                      color={getStatusColor(invitation.status) as any}
+                      color={getStatusColor(invitation.status) as "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"}
                       size="small"
                     />
                   </TableCell>

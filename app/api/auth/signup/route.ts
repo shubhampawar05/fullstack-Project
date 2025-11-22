@@ -370,7 +370,7 @@ async function handleInvitationSignup(body: any) {
     // Mark invitation as accepted
     invitation.status = "accepted";
     invitation.acceptedAt = new Date();
-    invitation.acceptedBy = newUser._id;
+    invitation.acceptedBy = newUser._id as any;
     await invitation.save({ session });
 
     await session.commitTransaction();

@@ -27,7 +27,7 @@ const updateDepartmentSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -38,7 +38,8 @@ export async function GET(
 
     const { user } = auth.data;
 
-    const departmentId = params.id;
+    const { id } = await params;
+    const departmentId = id;
 
     // Find department
     const department = await Department.findById(departmentId)
@@ -113,7 +114,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -135,7 +136,8 @@ export async function PUT(
       );
     }
 
-    const departmentId = params.id;
+    const { id } = await params;
+    const departmentId = id;
     const body = await request.json();
     const validationResult = updateDepartmentSchema.safeParse(body);
 
@@ -287,7 +289,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -309,7 +311,8 @@ export async function DELETE(
       );
     }
 
-    const departmentId = params.id;
+    const { id } = await params;
+    const departmentId = id;
 
     // Find department
     const department = await Department.findById(departmentId);

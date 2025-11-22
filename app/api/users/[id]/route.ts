@@ -26,7 +26,7 @@ const updateUserSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -48,7 +48,8 @@ export async function GET(
       );
     }
 
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
 
     // Find user
     const targetUser = await User.findById(userId)
@@ -110,7 +111,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -132,7 +133,8 @@ export async function PUT(
       );
     }
 
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
     const body = await request.json();
     const validationResult = updateUserSchema.safeParse(body);
 
@@ -260,7 +262,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -282,7 +284,8 @@ export async function DELETE(
       );
     }
 
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
 
     // Find user
     const targetUser = await User.findById(userId);

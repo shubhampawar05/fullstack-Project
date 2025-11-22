@@ -15,7 +15,7 @@ import { authenticateRequest } from "@/lib/auth-middleware";
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -37,7 +37,8 @@ export async function DELETE(
       );
     }
 
-    const invitationId = params.id;
+    const { id } = await params;
+    const invitationId = id;
 
     // Find invitation
     const invitation = await Invitation.findById(invitationId);

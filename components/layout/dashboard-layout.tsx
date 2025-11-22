@@ -78,7 +78,7 @@ export default function DashboardLayout({
       ? [
           {
             title: "Invitations",
-            path: "/dashboard/admin",
+            path: "/dashboard/admin?section=invitations",
             icon: <Mail />,
             roles: ["company_admin", "hr_manager"],
           },

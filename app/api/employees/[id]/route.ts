@@ -41,7 +41,7 @@ const updateEmployeeSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -67,7 +67,8 @@ export async function GET(
       );
     }
 
-    const employeeId = params.id;
+    const { id } = await params;
+    const employeeId = id;
 
     // Find employee
     const employee = await Employee.findById(employeeId)
@@ -168,7 +169,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -190,7 +191,8 @@ export async function PUT(
       );
     }
 
-    const employeeId = params.id;
+    const { id } = await params;
+    const employeeId = id;
     const body = await request.json();
     const validationResult = updateEmployeeSchema.safeParse(body);
 
@@ -318,7 +320,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -340,7 +342,8 @@ export async function DELETE(
       );
     }
 
-    const employeeId = params.id;
+    const { id } = await params;
+    const employeeId = id;
 
     // Find employee
     const employee = await Employee.findById(employeeId).populate("userId", "companyId");

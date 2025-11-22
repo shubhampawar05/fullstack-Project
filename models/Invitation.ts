@@ -27,6 +27,9 @@ export interface IInvitation extends Document {
   acceptedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  // Methods
+  isExpired(): boolean;
+  isValid(): boolean;
 }
 
 const InvitationSchema: Schema = new Schema(

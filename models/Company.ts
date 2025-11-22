@@ -89,7 +89,8 @@ CompanySchema.index({ status: 1 });
 CompanySchema.pre("save", function (next) {
   // Generate slug if it doesn't exist or if name is modified
   if ((!this.slug || this.isModified("name")) && this.name) {
-    this.slug = this.name
+    const nameStr = String(this.name);
+    this.slug = nameStr
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, "") // Remove special characters

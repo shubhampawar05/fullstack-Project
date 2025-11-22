@@ -18,9 +18,6 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
-  ToggleButtonGroup,
-  ToggleButton,
-  Paper,
   Fade,
 } from "@mui/material";
 import {
@@ -71,15 +68,6 @@ export default function LoginForm() {
   });
 
   const selectedRole = watch("role");
-
-  const handleRoleChange = (
-    _event: React.MouseEvent<HTMLElement>,
-    newRole: UserRole | null
-  ) => {
-    if (newRole !== null) {
-      setValue("role", newRole);
-    }
-  };
 
   const onSubmit = async (data: LoginFormData) => {
     setError("");
@@ -183,63 +171,75 @@ export default function LoginForm() {
             <Box sx={{ mb: 3 }}>
               <Typography
                 variant="body2"
-                fontWeight={600}
+                fontWeight={500}
                 color="text.secondary"
-                sx={{ mb: 1.5, fontSize: "0.875rem" }}
+                sx={{ mb: 2, fontSize: "0.875rem" }}
               >
                 I am a
               </Typography>
-              <ToggleButtonGroup
-                value={selectedRole}
-                exclusive
-                onChange={handleRoleChange}
-                fullWidth
+              <Box
                 sx={{
-                  "& .MuiToggleButton-root": {
-                    py: 1.5,
-                    px: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      color: "white",
-                      borderColor: "transparent",
-                      "&:hover": {
-                        background:
-                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                        opacity: 0.9,
-                      },
-                    },
-                    "&:hover": {
-                      bgcolor: "action.hover",
-                    },
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "repeat(2, 1fr)",
+                    sm: "repeat(3, 1fr)",
                   },
+                  gap: 1.5,
                 }}
               >
-                <ToggleButton value="company_admin">
-                  <Business sx={{ mr: 1, fontSize: 20 }} />
-                  Company Admin
-                </ToggleButton>
-                <ToggleButton value="hr_manager">
-                  <Person sx={{ mr: 1, fontSize: 20 }} />
-                  HR Manager
-                </ToggleButton>
-                <ToggleButton value="recruiter">
-                  <Person sx={{ mr: 1, fontSize: 20 }} />
-                  Recruiter
-                </ToggleButton>
-                <ToggleButton value="manager">
-                  <Person sx={{ mr: 1, fontSize: 20 }} />
-                  Manager
-                </ToggleButton>
-                <ToggleButton value="employee">
-                  <Person sx={{ mr: 1, fontSize: 20 }} />
-                  Employee
-                </ToggleButton>
-              </ToggleButtonGroup>
+                {[
+                  {
+                    value: "company_admin",
+                    label: "Company Admin",
+                    icon: Business,
+                  },
+                  { value: "hr_manager", label: "HR Manager", icon: Person },
+                  { value: "recruiter", label: "Recruiter", icon: Person },
+                  { value: "manager", label: "Manager", icon: Person },
+                  { value: "employee", label: "Employee", icon: Person },
+                ].map((role) => {
+                  const Icon = role.icon;
+                  const isSelected = selectedRole === role.value;
+                  return (
+                    <Button
+                      key={role.value}
+                      variant={isSelected ? "contained" : "outlined"}
+                      onClick={() => setValue("role", role.value as UserRole)}
+                      startIcon={<Icon sx={{ fontSize: 18 }} />}
+                      sx={{
+                        py: 1.5,
+                        px: 2,
+                        textTransform: "none",
+                        fontWeight: 500,
+                        fontSize: "0.875rem",
+                        borderRadius: 2,
+                        border: isSelected ? "none" : "1px solid",
+                        borderColor: "divider",
+                        background: isSelected
+                          ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                          : "transparent",
+                        color: isSelected ? "white" : "text.primary",
+                        boxShadow: isSelected
+                          ? "0 2px 8px rgba(102, 126, 234, 0.3)"
+                          : "none",
+                        "&:hover": {
+                          background: isSelected
+                            ? "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)"
+                            : "action.hover",
+                          boxShadow: isSelected
+                            ? "0 4px 12px rgba(102, 126, 234, 0.4)"
+                            : "none",
+                        },
+                        "& .MuiButton-startIcon": {
+                          marginRight: 0.75,
+                        },
+                      }}
+                    >
+                      {role.label}
+                    </Button>
+                  );
+                })}
+              </Box>
               <input type="hidden" {...register("role")} />
             </Box>
 

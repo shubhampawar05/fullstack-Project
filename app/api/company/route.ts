@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const { user } = auth.data;
 
     // Get company info
-    const company = await Company.findById(user.companyId);
+    const company = await Company.findById((user as any).companyId);
 
     if (!company) {
       return NextResponse.json(
