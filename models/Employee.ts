@@ -53,12 +53,10 @@ const EmployeeSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "User reference is required"],
-      unique: true,
     },
     employeeId: {
       type: String,
       required: [true, "Employee ID is required"],
-      unique: true,
       trim: true,
       uppercase: true,
     },

@@ -28,14 +28,12 @@ const CompanySchema: Schema = new Schema(
     name: {
       type: String,
       required: [true, "Company name is required"],
-      unique: true,
       trim: true,
       minlength: [2, "Company name must be at least 2 characters"],
       maxlength: [100, "Company name must not exceed 100 characters"],
     },
     slug: {
       type: String,
-      unique: true,
       sparse: true, // Allows multiple null/undefined values
       lowercase: true,
       trim: true,

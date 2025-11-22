@@ -59,7 +59,6 @@ const InvitationSchema: Schema = new Schema(
     token: {
       type: String,
       required: true,
-      unique: true,
     },
     rawToken: {
       type: String,

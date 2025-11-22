@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -44,7 +44,7 @@ import JobList from "@/components/recruitment/job-list";
 import CandidateList from "@/components/recruitment/candidate-list";
 import InterviewList from "@/components/recruitment/interview-list";
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -983,5 +983,26 @@ export default function AdminDashboard() {
         )}
       </Container>
     </DashboardLayout>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      }
+    >
+      <AdminDashboardContent />
+    </Suspense>
   );
 }
