@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     const newTokenPayload: TokenPayload = {
       userId: String(user._id),
       email: user.email,
+      role: user.role,
     };
 
     const { accessToken, refreshToken: newRefreshToken } =
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: authConfig.jwtExpiresIn, // 2 minutes
+      maxAge: authConfig.jwtExpiresIn, // 1 day
       path: "/",
     });
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: authConfig.jwtRefreshExpiresIn, // 10 minutes
+      maxAge: authConfig.jwtRefreshExpiresIn, // 7 days
       path: "/",
     });
 

@@ -9,23 +9,24 @@ import { authConfig } from "@/lib/config";
 export interface TokenPayload {
   userId: string;
   email: string;
+  role: string;
 }
 
 /**
- * Generate access token (short-lived, 2 minutes)
+ * Generate access token (1 day)
  */
 export function generateAccessToken(payload: TokenPayload): string {
   return jwt.sign(payload, authConfig.jwtSecret, {
-    expiresIn: authConfig.jwtExpiresIn, // 2 minutes (120 seconds)
+    expiresIn: authConfig.jwtExpiresIn, // 1 day (86400 seconds)
   });
 }
 
 /**
- * Generate refresh token (10 minutes)
+ * Generate refresh token (7 days)
  */
 export function generateRefreshToken(payload: TokenPayload): string {
   return jwt.sign(payload, authConfig.jwtRefreshSecret, {
-    expiresIn: authConfig.jwtRefreshExpiresIn, // 10 minutes (600 seconds)
+    expiresIn: authConfig.jwtRefreshExpiresIn, // 7 days (604800 seconds)
   });
 }
 

@@ -1,9 +1,25 @@
-import { SignupForm } from "@/components/auth/signup-form";
+/**
+ * Signup Page - TalentHR
+ */
+
+"use client";
+
+import { Box } from "@mui/material";
+import SignupForm from "@/components/auth/signup-form";
 
 export default function SignupPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+        p: 2,
+      }}
+    >
       <SignupForm />
-    </div>
+    </Box>
   );
 }
