@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Box,
   Container,
@@ -28,8 +29,8 @@ import InterviewList from "@/components/recruitment/interview-list";
 
 export default function RecruiterDashboard() {
   const router = useRouter();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [userRole, setUserRole] = useState<string>("");
   const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState({
     activeJobs: 0,
@@ -106,45 +107,29 @@ export default function RecruiterDashboard() {
     }
   }, []);
 
-  // Check authentication on mount
+  // Check authentication and role on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    if (authLoading) {
+      return; // Still loading, wait
+    }
 
-        if (!response.ok || response.status === 401) {
-          router.push("/login");
-          return;
-        }
+    if (!isAuthenticated || !user) {
+      router.push("/login");
+      return;
+    }
 
-        const data = await response.json();
-        if (!data.success) {
-          router.push("/login");
-          return;
-        }
+    // Check if user is recruiter
+    if (user.role !== "recruiter") {
+      router.push(`/dashboard/${user.role || "employee"}`);
+      return;
+    }
 
-        // Check if user is recruiter
-        if (data.user?.role !== "recruiter") {
-          router.push(`/dashboard/${data.user?.role || "employee"}`);
-          return;
-        }
-
-        setUserRole(data.user.role);
-        setCheckingAuth(false);
-        fetchStats();
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router, fetchStats]);
+    // Defer state update to avoid synchronous setState in effect
+    setTimeout(() => {
+      setCheckingAuth(false);
+      fetchStats();
+    }, 0);
+  }, [authLoading, isAuthenticated, user, router, fetchStats]);
 
   // Show loading while checking auth
   if (checkingAuth) {

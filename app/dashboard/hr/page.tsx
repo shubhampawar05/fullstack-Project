@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -18,19 +18,14 @@ import {
   CircularProgress,
   Button,
 } from "@mui/material";
-import {
-  People,
-  Mail,
-  TrendingUp,
-  Assignment,
-  Add,
-} from "@mui/icons-material";
+import { People, Mail, TrendingUp, Assignment, Add } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function HRManagerDashboard() {
   const router = useRouter();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [userRole, setUserRole] = useState<string>("");
   const [stats, setStats] = useState({
     totalEmployees: 0,
     activeInvitations: 0,
@@ -38,47 +33,7 @@ export default function HRManagerDashboard() {
     recentActivity: 0,
   });
 
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok || response.status === 401) {
-          router.push("/login");
-          return;
-        }
-
-        const data = await response.json();
-        if (!data.success) {
-          router.push("/login");
-          return;
-        }
-
-        // Check if user is hr_manager
-        if (data.user?.role !== "hr_manager") {
-          router.push(`/dashboard/${data.user?.role || "employee"}`);
-          return;
-        }
-
-        setUserRole(data.user.role);
-        setCheckingAuth(false);
-        fetchStats();
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       // Fetch users count
       const usersResponse = await fetch("/api/users?status=active", {
@@ -101,9 +56,10 @@ export default function HRManagerDashboard() {
       if (invitationsResponse.ok) {
         const invitationsData = await invitationsResponse.json();
         if (invitationsData.success) {
-          const pendingInvitations = invitationsData.invitations?.filter(
-            (inv: any) => inv.status === "pending"
-          ).length || 0;
+          const pendingInvitations =
+            invitationsData.invitations?.filter(
+              (inv: any) => inv.status === "pending"
+            ).length || 0;
           setStats((prev) => ({
             ...prev,
             activeInvitations: pendingInvitations,
@@ -113,7 +69,31 @@ export default function HRManagerDashboard() {
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
-  };
+  }, []);
+
+  // Check authentication and role on mount
+  useEffect(() => {
+    if (authLoading) {
+      return; // Still loading, wait
+    }
+
+    if (!isAuthenticated || !user) {
+      router.push("/login");
+      return;
+    }
+
+    // Check if user is hr_manager
+    if (user.role !== "hr_manager") {
+      router.push(`/dashboard/${user.role || "employee"}`);
+      return;
+    }
+
+    // Defer state update to avoid synchronous setState in effect
+    setTimeout(() => {
+      setCheckingAuth(false);
+      fetchStats();
+    }, 0);
+  }, [authLoading, isAuthenticated, user, router, fetchStats]);
 
   // Show loading while checking auth
   if (checkingAuth) {
@@ -132,7 +112,7 @@ export default function HRManagerDashboard() {
   }
 
   return (
-    <DashboardLayout role="hr_manager">
+    <DashboardLayout role={(user?.role as any) || "hr_manager"}>
       <Container maxWidth="lg">
         {/* Header */}
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -149,9 +129,19 @@ export default function HRManagerDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Total Employees
                     </Typography>
                     <Typography variant="h4">{stats.totalEmployees}</Typography>
@@ -165,12 +155,24 @@ export default function HRManagerDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Pending Invitations
                     </Typography>
-                    <Typography variant="h4">{stats.activeInvitations}</Typography>
+                    <Typography variant="h4">
+                      {stats.activeInvitations}
+                    </Typography>
                   </Box>
                   <Mail sx={{ fontSize: 40, color: "warning.main" }} />
                 </Box>
@@ -181,9 +183,19 @@ export default function HRManagerDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Pending Tasks
                     </Typography>
                     <Typography variant="h4">{stats.pendingTasks}</Typography>
@@ -197,9 +209,19 @@ export default function HRManagerDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
-                    <Typography color="text.secondary" gutterBottom variant="body2">
+                    <Typography
+                      color="text.secondary"
+                      gutterBottom
+                      variant="body2"
+                    >
                       Recent Activity
                     </Typography>
                     <Typography variant="h4">{stats.recentActivity}</Typography>
@@ -218,15 +240,19 @@ export default function HRManagerDashboard() {
               <Typography variant="h6" gutterBottom>
                 Quick Actions
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+              >
                 <Button
                   variant="contained"
                   startIcon={<Add />}
                   onClick={() => router.push("/dashboard/admin")}
                   sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+                      background:
+                        "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
                     },
                   }}
                 >
@@ -238,9 +264,7 @@ export default function HRManagerDashboard() {
                 >
                   Manage Users
                 </Button>
-                <Button variant="outlined">
-                  View Reports
-                </Button>
+                <Button variant="outlined">View Reports</Button>
               </Box>
             </Paper>
           </Grid>
@@ -260,4 +284,3 @@ export default function HRManagerDashboard() {
     </DashboardLayout>
   );
 }
-

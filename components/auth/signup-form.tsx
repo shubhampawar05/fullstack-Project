@@ -9,6 +9,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Box,
   Button,
@@ -74,6 +75,7 @@ type InvitationFormData = z.infer<typeof invitationSchema>;
 
 export default function SignupForm() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -115,13 +117,6 @@ export default function SignupForm() {
   // Check if this is invitation-based signup
   const isInvitationSignup = !!token;
 
-  // Validate invitation token on mount if token exists
-  useEffect(() => {
-    if (token) {
-      validateInvitationToken(token);
-    }
-  }, [token]);
-
   const validateInvitationToken = async (invitationToken: string) => {
     try {
       setValidatingToken(true);
@@ -143,6 +138,15 @@ export default function SignupForm() {
       setValidatingToken(false);
     }
   };
+
+  // Validate invitation token on mount if token exists
+  useEffect(() => {
+    if (token) {
+      setTimeout(() => {
+        validateInvitationToken(token);
+      }, 0);
+    }
+  }, [token]);
 
   // Company Admin Form
   const companyAdminForm = useForm<CompanyAdminFormData>({
@@ -256,6 +260,8 @@ export default function SignupForm() {
         return;
       }
 
+      // Refresh user data in context
+      await refreshUser();
       router.push("/dashboard/admin");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -303,6 +309,9 @@ export default function SignupForm() {
         setLoading(false);
         return;
       }
+
+      // Refresh user data in context
+      await refreshUser();
 
       // Redirect based on role
       const role = invitationInfo.invitation.role;

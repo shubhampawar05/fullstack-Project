@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -86,33 +86,7 @@ export default function EmployeeFormDialog({
     },
   });
 
-  useEffect(() => {
-    if (open) {
-      fetchUsers();
-      fetchDepartments();
-      fetchManagers();
-      if (employee) {
-        reset({
-          userId: employee.userId,
-          departmentId: employee.department?.id || "",
-          position: employee.position || "",
-          hireDate: employee.hireDate ? new Date(employee.hireDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-          employmentType: employee.employmentType as any || "full-time",
-          managerId: employee.manager?.id || "",
-          workLocation: employee.workLocation || "",
-          phone: employee.phone || "",
-        });
-      } else {
-        reset({
-          employmentType: "full-time",
-          hireDate: new Date().toISOString().split("T")[0],
-        });
-      }
-      setError("");
-    }
-  }, [open, employee, reset]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await fetch("/api/users", {
         credentials: "include",
@@ -127,9 +101,9 @@ export default function EmployeeFormDialog({
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  };
+  }, []);
 
-  const fetchDepartments = async () => {
+  const fetchDepartments = useCallback(async () => {
     try {
       const response = await fetch("/api/departments", {
         credentials: "include",
@@ -143,9 +117,9 @@ export default function EmployeeFormDialog({
     } catch (error) {
       console.error("Error fetching departments:", error);
     }
-  };
+  }, []);
 
-  const fetchManagers = async () => {
+  const fetchManagers = useCallback(async () => {
     try {
       const response = await fetch("/api/users?role=manager", {
         credentials: "include",
@@ -159,7 +133,44 @@ export default function EmployeeFormDialog({
     } catch (error) {
       console.error("Error fetching managers:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    // Fetch data asynchronously
+    const loadData = async () => {
+      await Promise.all([
+        fetchUsers(),
+        fetchDepartments(),
+        fetchManagers(),
+      ]);
+    };
+
+    loadData();
+
+    // Reset form
+    if (employee) {
+      reset({
+        userId: employee.userId,
+        departmentId: employee.department?.id || "",
+        position: employee.position || "",
+        hireDate: employee.hireDate ? new Date(employee.hireDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+        employmentType: employee.employmentType as any || "full-time",
+        managerId: employee.manager?.id || "",
+        workLocation: employee.workLocation || "",
+        phone: employee.phone || "",
+      });
+    } else {
+      reset({
+        employmentType: "full-time",
+        hireDate: new Date().toISOString().split("T")[0],
+      });
+    }
+    setError("");
+  }, [open, employee, reset, fetchUsers, fetchDepartments, fetchManagers]);
 
   const onSubmit = async (data: EmployeeFormData) => {
     setError("");

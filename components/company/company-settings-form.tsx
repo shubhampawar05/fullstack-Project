@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -64,11 +64,7 @@ export default function CompanySettingsForm() {
     resolver: zodResolver(companySettingsSchema),
   });
 
-  useEffect(() => {
-    fetchCompany();
-  }, []);
-
-  const fetchCompany = async () => {
+  const fetchCompany = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/company", {
@@ -112,7 +108,11 @@ export default function CompanySettingsForm() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCompany();
+  }, [fetchCompany]);
 
   const onSubmit = async (data: CompanySettingsFormData) => {
     setError("");

@@ -8,45 +8,32 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 import LoginForm from "@/components/auth/login-form";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Check if user is already authenticated
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    if (loading) {
+      return; // Still loading, wait
+    }
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            // User is already authenticated, redirect to their dashboard
-            const role = data.user.role;
-            const dashboardPath =
-              role === "company_admin"
-                ? "/dashboard/admin"
-                : `/dashboard/${role}`;
-            router.replace(dashboardPath);
-            return;
-          }
-        }
-        // Not authenticated, show login form
-        setCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setCheckingAuth(false);
-      }
-    };
+    if (user) {
+      // User is already authenticated, redirect to their dashboard
+      const role = user.role;
+      const dashboardPath =
+        role === "company_admin" ? "/dashboard/admin" : `/dashboard/${role}`;
+      router.replace(dashboardPath);
+      return;
+    }
 
-    checkAuth();
-  }, [router]);
+    // Not authenticated, show login form - defer state update
+    setTimeout(() => {
+      setCheckingAuth(false);
+    }, 0);
+  }, [user, loading, router]);
 
   // Show loading while checking authentication
   if (checkingAuth) {

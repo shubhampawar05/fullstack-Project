@@ -25,11 +25,12 @@ import {
   TrendingUp,
 } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function ManagerDashboard() {
   const router = useRouter();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [userRole, setUserRole] = useState<string>("");
   const [stats, setStats] = useState({
     teamMembers: 0,
     pendingLeaveRequests: 0,
@@ -37,44 +38,28 @@ export default function ManagerDashboard() {
     teamPerformance: 0,
   });
 
-  // Check authentication on mount
+  // Check authentication and role on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    if (authLoading) {
+      return; // Still loading, wait
+    }
 
-        if (!response.ok || response.status === 401) {
-          router.push("/login");
-          return;
-        }
+    if (!isAuthenticated || !user) {
+      router.push("/login");
+      return;
+    }
 
-        const data = await response.json();
-        if (!data.success) {
-          router.push("/login");
-          return;
-        }
+    // Check if user is manager
+    if (user.role !== "manager") {
+      router.push(`/dashboard/${user.role || "employee"}`);
+      return;
+    }
 
-        // Check if user is manager
-        if (data.user?.role !== "manager") {
-          router.push(`/dashboard/${data.user?.role || "employee"}`);
-          return;
-        }
-
-        setUserRole(data.user.role);
-        setCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    // Defer state update to avoid synchronous setState in effect
+    setTimeout(() => {
+      setCheckingAuth(false);
+    }, 0);
+  }, [authLoading, isAuthenticated, user, router]);
 
   // Show loading while checking auth
   if (checkingAuth) {
@@ -93,7 +78,7 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <DashboardLayout role="manager">
+    <DashboardLayout role={(user?.role as any) || "manager"}>
       <Container maxWidth="lg">
         {/* Header */}
         <Paper sx={{ p: 3, mb: 3 }}>

@@ -8,53 +8,44 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Box, CircularProgress } from "@mui/material";
 import SignupForm from "@/components/auth/signup-form";
+import { useAuth } from "@/contexts/auth-context";
 
 function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, loading } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
   const token = searchParams.get("token");
 
   useEffect(() => {
     // If there's an invitation token, allow signup (invitation-based signup)
     if (token) {
-      setCheckingAuth(false);
+      setTimeout(() => {
+        setCheckingAuth(false);
+      }, 0);
       return;
     }
 
-    // Check if user is already authenticated (only for company admin signup)
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    if (loading) {
+      return; // Still loading, wait
+    }
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            // User is already authenticated, redirect to their dashboard
-            const role = data.user.role;
-            const dashboardPath =
-              role === "company_admin"
-                ? "/dashboard/admin"
-                : `/dashboard/${role}`;
-            router.replace(dashboardPath);
-            return;
-          }
-        }
-        // Not authenticated, show signup form
-        setCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setCheckingAuth(false);
-      }
-    };
+    if (user) {
+      // User is already authenticated, redirect to their dashboard
+      const role = user.role;
+      const dashboardPath =
+        role === "company_admin"
+          ? "/dashboard/admin"
+          : `/dashboard/${role}`;
+      router.replace(dashboardPath);
+      return;
+    }
 
-    checkAuth();
-  }, [router, token]);
+    // Not authenticated, show signup form - defer state update
+    setTimeout(() => {
+      setCheckingAuth(false);
+    }, 0);
+  }, [user, loading, router, token]);
 
   // Show loading while checking authentication
   if (checkingAuth) {

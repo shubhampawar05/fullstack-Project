@@ -84,7 +84,9 @@ export default function UserEditDialog({
         status: user.status,
         password: "",
       });
-      setError("");
+      setTimeout(() => {
+        setError("");
+      }, 0);
     }
   }, [open, user, reset]);
 

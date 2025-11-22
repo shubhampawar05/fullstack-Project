@@ -107,7 +107,9 @@ export default function CandidateFormDialog({
           stage: "application",
         });
       }
-      setError("");
+      setTimeout(() => {
+        setError("");
+      }, 0);
     }
   }, [open, candidate, reset]);
 

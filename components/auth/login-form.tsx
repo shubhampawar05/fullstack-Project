@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Box,
   Button,
@@ -50,6 +51,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -89,6 +91,9 @@ export default function LoginForm() {
         setLoading(false);
         return;
       }
+
+      // Refresh user data in context
+      await refreshUser();
 
       // Redirect based on role
       let dashboardPath = "/dashboard/employee";

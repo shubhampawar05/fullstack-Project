@@ -19,56 +19,41 @@ import { Add, People } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import EmployeeList from "@/components/employees/employee-list";
 import EmployeeFormDialog from "@/components/employees/employee-form-dialog";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function EmployeesPage() {
   const router = useRouter();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [userRole, setUserRole] = useState<string>("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [formDialog, setFormDialog] = useState(false);
 
-  // Check authentication on mount
+  // Check authentication and role on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    if (authLoading) {
+      return; // Still loading, wait
+    }
 
-        if (!response.ok || response.status === 401) {
-          router.push("/login");
-          return;
-        }
+    if (!isAuthenticated || !user) {
+      router.push("/login");
+      return;
+    }
 
-        const data = await response.json();
-        if (!data.success) {
-          router.push("/login");
-          return;
-        }
+    // Check if user has permission (Admin, HR, or Manager)
+    if (
+      user.role !== "company_admin" &&
+      user.role !== "hr_manager" &&
+      user.role !== "manager"
+    ) {
+      router.push(`/dashboard/${user.role || "employee"}`);
+      return;
+    }
 
-        // Check if user has permission (Admin, HR, or Manager)
-        if (
-          data.user?.role !== "company_admin" &&
-          data.user?.role !== "hr_manager" &&
-          data.user?.role !== "manager"
-        ) {
-          router.push(`/dashboard/${data.user?.role || "employee"}`);
-          return;
-        }
-
-        setUserRole(data.user.role);
-        setCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    // Defer state update to avoid synchronous setState in effect
+    setTimeout(() => {
+      setCheckingAuth(false);
+    }, 0);
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
@@ -96,7 +81,7 @@ export default function EmployeesPage() {
   }
 
   return (
-    <DashboardLayout role={userRole as any}>
+    <DashboardLayout role={(user?.role as any) || "company_admin"}>
       <Container maxWidth="xl">
         <Paper sx={{ p: 3, mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -111,7 +96,7 @@ export default function EmployeesPage() {
                 </Typography>
               </Box>
             </Box>
-            {(userRole === "company_admin" || userRole === "hr_manager") && (
+            {(user?.role === "company_admin" || user?.role === "hr_manager") && (
               <Button
                 variant="contained"
                 startIcon={<Add />}

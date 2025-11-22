@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -48,13 +48,7 @@ export default function EmployeeDetailDialog({
   const [error, setError] = useState<string>("");
   const [employee, setEmployee] = useState<any>(null);
 
-  useEffect(() => {
-    if (open && employeeId) {
-      fetchEmployee();
-    }
-  }, [open, employeeId]);
-
-  const fetchEmployee = async () => {
+  const fetchEmployee = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/employees/${employeeId}`, {
@@ -86,7 +80,13 @@ export default function EmployeeDetailDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [employeeId]);
+
+  useEffect(() => {
+    if (open && employeeId) {
+      fetchEmployee();
+    }
+  }, [open, employeeId, fetchEmployee]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

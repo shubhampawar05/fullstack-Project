@@ -1,6 +1,6 @@
 /**
- * User Management Page - TalentHR
- * List and manage all users in the company
+ * Invitations Management Page - TalentHR
+ * Separate page for managing user invitations
  */
 
 "use client";
@@ -13,12 +13,14 @@ import {
   Typography,
   Paper,
   CircularProgress,
+  Grid,
 } from "@mui/material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
-import UserList from "@/components/users/user-list";
+import InvitationList from "@/components/invitations/invitation-list";
+import InvitationForm from "@/components/invitations/invitation-form";
 import { useAuth } from "@/contexts/auth-context";
 
-export default function UsersPage() {
+export default function InvitationsPage() {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -47,7 +49,7 @@ export default function UsersPage() {
     }, 0);
   }, [authLoading, isAuthenticated, user, router]);
 
-  const handleRefresh = () => {
+  const handleInvitationSuccess = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
@@ -69,17 +71,36 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout role={(user?.role as any) || "company_admin"}>
-      <Container maxWidth="lg">
-        <Paper sx={{ p: 3, mb: 3 }}>
+      <Container maxWidth="xl">
+        <Paper
+          sx={{
+            p: 3,
+            mb: 3,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+          }}
+        >
           <Typography variant="h4" component="h1" fontWeight={600} gutterBottom>
-            User Management
+            Invitation Management
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage all users in your company. View, edit, and activate/deactivate user accounts.
+          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+            Invite new users to join your organization and manage existing invitations
           </Typography>
         </Paper>
 
-        <UserList key={refreshKey} onRefresh={handleRefresh} />
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <InvitationForm onSuccess={handleInvitationSuccess} />
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                All Invitations
+              </Typography>
+              <InvitationList key={refreshKey} />
+            </Paper>
+          </Grid>
+        </Grid>
       </Container>
     </DashboardLayout>
   );

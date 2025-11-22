@@ -26,11 +26,12 @@ import {
   AccountBalance,
 } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function EmployeeDashboard() {
   const router = useRouter();
+  const { user: authUser, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState({
     leaveBalance: 0,
     upcomingEvents: 0,
@@ -38,44 +39,28 @@ export default function EmployeeDashboard() {
     attendance: 0,
   });
 
-  // Check authentication on mount
+  // Check authentication and role on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    if (authLoading) {
+      return; // Still loading, wait
+    }
 
-        if (!response.ok || response.status === 401) {
-          router.push("/login");
-          return;
-        }
+    if (!isAuthenticated || !authUser) {
+      router.push("/login");
+      return;
+    }
 
-        const data = await response.json();
-        if (!data.success) {
-          router.push("/login");
-          return;
-        }
+    // Check if user is employee
+    if (authUser.role !== "employee") {
+      router.push(`/dashboard/${authUser.role || "admin"}`);
+      return;
+    }
 
-        // Check if user is employee
-        if (data.user?.role !== "employee") {
-          router.push(`/dashboard/${data.user?.role || "admin"}`);
-          return;
-        }
-
-        setUser(data.user);
-        setCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    // Defer state update to avoid synchronous setState in effect
+    setTimeout(() => {
+      setCheckingAuth(false);
+    }, 0);
+  }, [authLoading, isAuthenticated, authUser, router]);
 
   // Show loading while checking auth
   if (checkingAuth) {
@@ -94,7 +79,7 @@ export default function EmployeeDashboard() {
   }
 
   return (
-    <DashboardLayout role="employee">
+    <DashboardLayout role={(authUser?.role as any) || "employee"}>
       <Container maxWidth="lg">
         {/* Header */}
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -107,14 +92,14 @@ export default function EmployeeDashboard() {
                 fontSize: 24,
               }}
             >
-              {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "E"}
+              {authUser?.name?.charAt(0)?.toUpperCase() || authUser?.email?.charAt(0)?.toUpperCase() || "E"}
             </Avatar>
             <Box>
               <Typography variant="h4" component="h1" fontWeight={600}>
-                Welcome, {user?.name || "Employee"}!
+                Welcome, {authUser?.name || "Employee"}!
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {user?.email}
+                {authUser?.email}
               </Typography>
             </Box>
           </Box>
@@ -223,16 +208,16 @@ export default function EmployeeDashboard() {
               </Typography>
               <Box sx={{ mt: 2 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  <strong>Name:</strong> {user?.name || "N/A"}
+                  <strong>Name:</strong> {authUser?.name || "N/A"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  <strong>Email:</strong> {user?.email || "N/A"}
+                  <strong>Email:</strong> {authUser?.email || "N/A"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  <strong>Role:</strong> {user?.role?.replace("_", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()) || "N/A"}
+                  <strong>Role:</strong> {authUser?.role?.replace("_", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()) || "N/A"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  <strong>Company:</strong> {user?.companyName || "N/A"}
+                  <strong>Company:</strong> {authUser?.companyName || "N/A"}
                 </Typography>
               </Box>
             </Paper>

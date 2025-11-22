@@ -5,8 +5,10 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Box,
   Drawer,
@@ -26,6 +28,7 @@ import {
   useTheme,
   useMediaQuery,
   Badge,
+  CircularProgress,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -55,17 +58,18 @@ interface MenuItem {
   badge?: number;
 }
 
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
   role,
 }: DashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [user, setUser] = useState<any>(null);
+  const { user, logout: authLogout } = useAuth();
 
   // Menu items based on role
   const menuItems: MenuItem[] = [
@@ -78,7 +82,7 @@ export default function DashboardLayout({
       ? [
           {
             title: "Invitations",
-            path: "/dashboard/admin?section=invitations",
+            path: "/dashboard/invitations",
             icon: <Mail />,
             roles: ["company_admin", "hr_manager"],
           },
@@ -121,27 +125,6 @@ export default function DashboardLayout({
     (item) => !item.roles || item.roles.includes(role)
   );
 
-  useEffect(() => {
-    // Fetch user info
-    const fetchUser = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setUser(data.user);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -155,16 +138,7 @@ export default function DashboardLayout({
   };
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      router.push("/login");
-    }
+    await authLogout();
   };
 
   const drawer = (
@@ -196,13 +170,36 @@ export default function DashboardLayout({
       <Divider />
       <List sx={{ pt: 2 }}>
         {filteredMenuItems.map((item) => {
-          const isActive = pathname === item.path || pathname.startsWith(item.path + "/");
+          // Check if path matches (handle query params)
+          const itemPathWithoutQuery = item.path.split("?")[0];
+          const currentPath = pathname;
+          
+          // Check if path matches
+          const pathMatches = currentPath === itemPathWithoutQuery || 
+                             currentPath.startsWith(itemPathWithoutQuery + "/");
+          
+          // Check if query params match (if item has query params)
+          let queryMatches = true;
+          if (item.path.includes("?")) {
+            const itemQueryString = item.path.split("?")[1];
+            const itemQueryParams = new URLSearchParams(itemQueryString);
+            const currentQueryParams = searchParams;
+            
+            // Check if all query params from item match current query params
+            queryMatches = Array.from(itemQueryParams.entries()).every(([key, value]) => {
+              return currentQueryParams.get(key) === value;
+            });
+          }
+          
+          const isActive = pathMatches && queryMatches;
+          
           return (
             <ListItem key={item.title} disablePadding>
               <ListItemButton
+                component={Link}
+                href={item.path}
                 selected={isActive}
                 onClick={() => {
-                  router.push(item.path);
                   if (isMobile) setMobileOpen(false);
                 }}
                 sx={{
@@ -361,6 +358,30 @@ export default function DashboardLayout({
         {children}
       </Box>
     </Box>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+  role,
+}: DashboardLayoutProps) {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      }
+    >
+      <DashboardLayoutContent role={role}>{children}</DashboardLayoutContent>
+    </Suspense>
   );
 }
 

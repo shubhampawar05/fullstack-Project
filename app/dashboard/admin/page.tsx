@@ -7,6 +7,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Box,
   Container,
@@ -35,8 +36,6 @@ import {
   ArrowForward,
 } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
-import InvitationList from "@/components/invitations/invitation-list";
-import InvitationForm from "@/components/invitations/invitation-form";
 import UserList from "@/components/users/user-list";
 import CompanySettingsForm from "@/components/company/company-settings-form";
 import EmployeeList from "@/components/employees/employee-list";
@@ -47,8 +46,8 @@ import InterviewList from "@/components/recruitment/interview-list";
 function AdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -66,8 +65,10 @@ function AdminDashboardContent() {
   // Check URL params to set active section
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["invitations", "users", "settings", "employees", "recruitment"].includes(section)) {
-      setActiveSection(section);
+    if (section && ["users", "settings", "employees", "recruitment"].includes(section)) {
+      setTimeout(() => {
+        setActiveSection(section);
+      }, 0);
     }
   }, [searchParams]);
 
@@ -166,51 +167,40 @@ function AdminDashboardContent() {
     }
   };
 
-  // Check authentication on mount
+  // Check URL params to set active section
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+    const section = searchParams.get("section");
+    if (section && ["users", "settings", "employees", "recruitment"].includes(section)) {
+      setTimeout(() => {
+        setActiveSection(section);
+      }, 0);
+    }
+  }, [searchParams]);
 
-        if (!response.ok || response.status === 401) {
-          router.push("/login");
-          return;
-        }
+  // Check authentication and role on mount
+  useEffect(() => {
+    if (authLoading) {
+      return; // Still loading, wait
+    }
 
-        const data = await response.json();
-        if (!data.success) {
-          router.push("/login");
-          return;
-        }
+    if (!isAuthenticated || !user) {
+      router.push("/login");
+      return;
+    }
 
-        // Check if user is company_admin
-        if (data.user?.role !== "company_admin") {
-          router.push(`/dashboard/${data.user?.role || "employee"}`);
-          return;
-        }
+    // Check if user is company_admin
+    if (user.role !== "company_admin") {
+      router.push(`/dashboard/${user.role || "employee"}`);
+      return;
+    }
 
-        setUser(data.user);
-        setCheckingAuth(false);
-        fetchCompany();
-        fetchStats();
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  const handleInvitationSuccess = () => {
-    setRefreshKey((prev) => prev + 1);
-    fetchStats();
-  };
+    // Defer state update to avoid synchronous setState in effect
+    setTimeout(() => {
+      setCheckingAuth(false);
+      fetchCompany();
+      fetchStats();
+    }, 0);
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleUserSuccess = () => {
     fetchStats();
@@ -741,44 +731,6 @@ function AdminDashboardContent() {
               </Grid>
             </Grid>
           </>
-        )}
-
-        {/* Invitations Section */}
-        {activeSection === "invitations" && (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 3,
-              }}
-            >
-              <Typography variant="h5" fontWeight={600}>
-                Invitation Management
-              </Typography>
-              <Button
-                variant="outlined"
-                startIcon={<ArrowForward />}
-                onClick={() => setActiveSection("overview")}
-              >
-                Back to Overview
-              </Button>
-            </Box>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
-                <InvitationForm onSuccess={handleInvitationSuccess} />
-              </Grid>
-              <Grid item xs={12} md={8}>
-                <Paper sx={{ p: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    All Invitations
-                  </Typography>
-                  <InvitationList key={refreshKey} />
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
         )}
 
         {/* Users Section */}

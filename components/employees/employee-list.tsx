@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -86,12 +86,7 @@ export default function EmployeeList({ onRefresh }: EmployeeListProps) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [departments, setDepartments] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchEmployees();
-    fetchDepartments();
-  }, [searchTerm, departmentFilter, statusFilter]);
-
-  const fetchDepartments = async () => {
+  const fetchDepartments = useCallback(async () => {
     try {
       const response = await fetch("/api/departments", {
         credentials: "include",
@@ -105,9 +100,9 @@ export default function EmployeeList({ onRefresh }: EmployeeListProps) {
     } catch (error) {
       console.error("Error fetching departments:", error);
     }
-  };
+  }, []);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -149,7 +144,12 @@ export default function EmployeeList({ onRefresh }: EmployeeListProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, departmentFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchEmployees();
+    fetchDepartments();
+  }, [fetchEmployees, fetchDepartments]);
 
   const handleEditSuccess = () => {
     setFormDialog({ open: false, employee: null });
