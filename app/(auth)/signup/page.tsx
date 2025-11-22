@@ -71,11 +71,49 @@ function SignupContent() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "background.default",
-        p: 2,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <SignupForm />
+      {/* Animated Background Elements */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: "-10%",
+          left: "-10%",
+          width: "50%",
+          height: "50%",
+          background: "radial-gradient(circle, rgba(102,126,234,0.4) 0%, rgba(118,75,162,0) 70%)",
+          filter: "blur(60px)",
+          zIndex: 0,
+          animation: "float 10s infinite ease-in-out",
+          "@keyframes float": {
+            "0%, 100%": { transform: "translate(0, 0)" },
+            "50%": { transform: "translate(20px, 20px)" },
+          },
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "-10%",
+          right: "-10%",
+          width: "50%",
+          height: "50%",
+          background: "radial-gradient(circle, rgba(118,75,162,0.4) 0%, rgba(102,126,234,0) 70%)",
+          filter: "blur(60px)",
+          zIndex: 0,
+          animation: "float-reverse 12s infinite ease-in-out",
+          "@keyframes float-reverse": {
+            "0%, 100%": { transform: "translate(0, 0)" },
+            "50%": { transform: "translate(-20px, -20px)" },
+          },
+        }}
+      />
+
+      <Box sx={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "550px", px: 2 }}>
+        <SignupForm />
+      </Box>
     </Box>
   );
 }

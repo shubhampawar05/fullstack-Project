@@ -346,8 +346,10 @@ export default function SignupForm() {
             width: "100%",
             borderRadius: 4,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(20px)",
           }}
         >
           <CardContent sx={{ p: 4, textAlign: "center" }}>
@@ -377,8 +379,10 @@ export default function SignupForm() {
             width: "100%",
             borderRadius: 4,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(20px)",
           }}
         >
           <CardContent sx={{ p: 4 }}>
@@ -419,8 +423,10 @@ export default function SignupForm() {
             width: "100%",
             borderRadius: 4,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(20px)",
           }}
         >
           <Box
@@ -621,8 +627,10 @@ export default function SignupForm() {
             width: "100%",
             borderRadius: 4,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(0,0,0,0.05)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(20px)",
           }}
         >
           <Box
@@ -775,8 +783,10 @@ export default function SignupForm() {
           width: "100%",
           borderRadius: 4,
           overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+          border: "1px solid rgba(255,255,255,0.5)",
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(20px)",
         }}
       >
         <Box

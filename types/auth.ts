@@ -18,6 +18,7 @@ export interface User {
   };
   status: "active" | "inactive" | "pending";
   createdAt: string;
+  employeeId?: string;
 }
 
 export interface AuthResponse {

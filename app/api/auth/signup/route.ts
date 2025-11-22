@@ -15,6 +15,7 @@ import User from "@/models/User";
 import Company from "@/models/Company";
 import Invitation from "@/models/Invitation";
 import OTP from "@/models/OTP";
+import Employee from "@/models/Employee";
 import { generateTokenPair, TokenPayload } from "@/lib/jwt";
 import { authConfig } from "@/lib/config";
 
@@ -204,6 +205,21 @@ async function handleCompanyAdminSignup(body: any) {
     );
 
     const newUser = user[0];
+
+    // Create employee record for admin
+    await Employee.create(
+      [
+        {
+          userId: newUser._id,
+          employeeId: `EMP-${Date.now()}`,
+          position: "Company Admin",
+          hireDate: new Date(),
+          employmentType: "full-time",
+          status: "active",
+        },
+      ],
+      { session }
+    );
 
     await session.commitTransaction();
 
@@ -418,10 +434,10 @@ async function handleInvitationSignup(body: any) {
           companyId: String(invitation.companyId),
           company: company
             ? {
-                id: String(company._id),
-                name: company.name,
-                slug: company.slug,
-              }
+              id: String(company._id),
+              name: company.name,
+              slug: company.slug,
+            }
             : undefined,
           status: newUser.status,
           createdAt: newUser.createdAt.toISOString(),

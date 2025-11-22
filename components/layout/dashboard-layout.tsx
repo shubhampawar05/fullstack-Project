@@ -29,6 +29,7 @@ import {
   useMediaQuery,
   Badge,
   CircularProgress,
+  Card,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -142,7 +143,7 @@ function DashboardLayoutContent({
   };
 
   const drawer = (
-    <Box>
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <Toolbar
         sx={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -150,103 +151,175 @@ function DashboardLayoutContent({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          px: 3,
+          minHeight: "80px !important",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Business />
-          <Typography variant="h6" noWrap component="div" fontWeight={600}>
-            TalentHR
-          </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              bgcolor: "rgba(255,255,255,0.2)",
+              p: 0.8,
+              borderRadius: 2,
+              display: "flex",
+            }}
+          >
+            <Business sx={{ fontSize: 24 }} />
+          </Box>
+          <Box>
+            <Typography variant="h6" noWrap component="div" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+              TalentHR
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.8, display: "block", lineHeight: 1 }}>
+              HR Management
+            </Typography>
+          </Box>
         </Box>
         {isMobile && (
-          <IconButton
-            onClick={handleDrawerToggle}
-            sx={{ color: "white" }}
-          >
+          <IconButton onClick={handleDrawerToggle} sx={{ color: "white" }}>
             <ChevronLeft />
           </IconButton>
         )}
       </Toolbar>
-      <Divider />
-      <List sx={{ pt: 2 }}>
-        {filteredMenuItems.map((item) => {
-          // Check if path matches (handle query params)
-          const itemPathWithoutQuery = item.path.split("?")[0];
-          const currentPath = pathname;
-          
-          // Check if path matches
-          const pathMatches = currentPath === itemPathWithoutQuery || 
-                             currentPath.startsWith(itemPathWithoutQuery + "/");
-          
-          // Check if query params match (if item has query params)
-          let queryMatches = true;
-          if (item.path.includes("?")) {
-            const itemQueryString = item.path.split("?")[1];
-            const itemQueryParams = new URLSearchParams(itemQueryString);
-            const currentQueryParams = searchParams;
+      
+      <Box sx={{ p: 2, flexGrow: 1, overflowY: "auto" }}>
+        <List sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          {filteredMenuItems.map((item) => {
+            // Check if path matches (handle query params)
+            const itemPathWithoutQuery = item.path.split("?")[0];
+            const currentPath = pathname;
             
-            // Check if all query params from item match current query params
-            queryMatches = Array.from(itemQueryParams.entries()).every(([key, value]) => {
-              return currentQueryParams.get(key) === value;
-            });
-          }
-          
-          const isActive = pathMatches && queryMatches;
-          
-          return (
-            <ListItem key={item.title} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={isActive}
-                onClick={() => {
-                  if (isMobile) setMobileOpen(false);
-                }}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: "primary.main",
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
-                    },
-                    "& .MuiListItemIcon-root": {
-                      color: "white",
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon
+            // Check if path matches
+            const pathMatches = currentPath === itemPathWithoutQuery || 
+                               currentPath.startsWith(itemPathWithoutQuery + "/");
+            
+            // Check if query params match (if item has query params)
+            let queryMatches = true;
+            if (item.path.includes("?")) {
+              const itemQueryString = item.path.split("?")[1];
+              const itemQueryParams = new URLSearchParams(itemQueryString);
+              const currentQueryParams = searchParams;
+              
+              // Check if all query params from item match current query params
+              queryMatches = Array.from(itemQueryParams.entries()).every(([key, value]) => {
+                return currentQueryParams.get(key) === value;
+              });
+            }
+            
+            const isActive = pathMatches && queryMatches;
+            
+            return (
+              <ListItem key={item.title} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href={item.path}
+                  selected={isActive}
+                  onClick={() => {
+                    if (isMobile) setMobileOpen(false);
+                  }}
                   sx={{
-                    color: isActive ? "white" : "text.secondary",
+                    borderRadius: 2,
+                    mb: 0.5,
+                    py: 1.5,
+                    px: 2,
+                    transition: "all 0.2s ease-in-out",
+                    "&.Mui-selected": {
+                      background: "linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%)",
+                      color: "primary.main",
+                      borderLeft: "4px solid",
+                      borderColor: "primary.main",
+                      "&:hover": {
+                        background: "linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%)",
+                      },
+                      "& .MuiListItemIcon-root": {
+                        color: "primary.main",
+                      },
+                    },
+                    "&:hover": {
+                      backgroundColor: "rgba(0,0,0,0.02)",
+                      transform: "translateX(4px)",
+                    },
                   }}
                 >
-                  {item.badge ? (
-                    <Badge badgeContent={item.badge} color="error">
-                      {item.icon}
-                    </Badge>
-                  ) : (
-                    item.icon
-                  )}
-                </ListItemIcon>
-                <ListItemText primary={item.title} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 40,
+                      color: isActive ? "primary.main" : "text.secondary",
+                      transition: "color 0.2s",
+                    }}
+                  >
+                    {item.badge ? (
+                      <Badge badgeContent={item.badge} color="error">
+                        {item.icon}
+                      </Badge>
+                    ) : (
+                      item.icon
+                    )}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.title} 
+                    primaryTypographyProps={{ 
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: "0.95rem",
+                    }} 
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </Box>
+
+      <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
+        <Card
+            elevation={0}
+            sx={{
+                background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
+                color: "white",
+                borderRadius: 3,
+                p: 2,
+                position: "relative",
+                overflow: "hidden"
+            }}
+        >
+            <Box sx={{ position: "relative", zIndex: 1 }}>
+                <Typography variant="subtitle2" fontWeight="bold">Pro Tip</Typography>
+                <Typography variant="caption" sx={{ display: "block", mt: 0.5, opacity: 0.9 }}>
+                    Complete your profile to unlock all features.
+                </Typography>
+            </Box>
+            <Box 
+                sx={{ 
+                    position: "absolute", 
+                    right: -10, 
+                    bottom: -10, 
+                    opacity: 0.2, 
+                    transform: "rotate(-15deg)" 
+                }}
+            >
+                <Notifications sx={{ fontSize: 60 }} />
+            </Box>
+        </Card>
+      </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", bgcolor: "#f5f7fa", minHeight: "100vh" }}>
       <AppBar
         position="fixed"
         sx={{
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px - 32px)` },
           ml: { md: `${DRAWER_WIDTH}px` },
-          background: "white",
+          mr: { md: "16px" },
+          mt: { md: "16px" },
+          right: 0,
+          borderRadius: 3,
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(12px)",
           color: "text.primary",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          border: "1px solid rgba(255,255,255,0.5)",
         }}
       >
         <Toolbar>
@@ -260,7 +333,7 @@ function DashboardLayoutContent({
             <MenuIcon />
           </IconButton>
 
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
             {menuItems.find((item) => pathname === item.path)?.title || "Dashboard"}
           </Typography>
 
@@ -351,10 +424,9 @@ function DashboardLayoutContent({
           p: 3,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           minHeight: "100vh",
-          backgroundColor: "background.default",
+          mt: { xs: 8, md: 10 },
         }}
       >
-        <Toolbar /> {/* Spacer for AppBar */}
         {children}
       </Box>
     </Box>

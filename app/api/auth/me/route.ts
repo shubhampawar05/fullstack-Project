@@ -10,6 +10,7 @@ import { authConfig } from "@/lib/config";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
 import Company from "@/models/Company";
+import Employee from "@/models/Employee";
 import { AuthResponse } from "@/types/auth";
 
 export async function GET(request: NextRequest) {
@@ -125,6 +126,9 @@ export async function GET(request: NextRequest) {
     // Get company info
     const company = await Company.findById(user.companyId);
 
+    // Get employee info if exists
+    const employee = await Employee.findOne({ userId: user._id });
+
     return NextResponse.json<AuthResponse>({
       success: true,
       message: "User authenticated",
@@ -134,12 +138,13 @@ export async function GET(request: NextRequest) {
         name: user.name,
         role: user.role,
         companyId: String(user.companyId),
+        employeeId: employee ? String(employee._id) : undefined,
         company: company
           ? {
-              id: String(company._id),
-              name: company.name,
-              slug: company.slug,
-            }
+            id: String(company._id),
+            name: company.name,
+            slug: company.slug,
+          }
           : undefined,
         status: user.status,
         createdAt: user.createdAt.toISOString(),
