@@ -156,7 +156,7 @@ async function refreshAndRetry(
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: authConfig.jwtRefreshExpiresIn, // 10 minutes
+      maxAge: authConfig.jwtRefreshExpiresIn, // 7 days
       path: "/",
     });
 

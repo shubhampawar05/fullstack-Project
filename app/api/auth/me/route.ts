@@ -9,6 +9,7 @@ import {
 import { authConfig } from "@/lib/config";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import Company from "@/models/Company";
 import { AuthResponse } from "@/types/auth";
 
 export async function GET(request: NextRequest) {
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
           const newTokenPayload: TokenPayload = {
             userId: String(user._id),
             email: user.email,
+            role: user.role,
           };
 
           const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest) {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
-            maxAge: authConfig.jwtExpiresIn, // 2 minutes
+            maxAge: authConfig.jwtExpiresIn, // 1 day
             path: "/",
           });
 
@@ -78,7 +80,7 @@ export async function GET(request: NextRequest) {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
-            maxAge: authConfig.jwtRefreshExpiresIn, // 10 minutes
+            maxAge: authConfig.jwtRefreshExpiresIn, // 7 days
             path: "/",
           });
 
@@ -120,6 +122,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get company info
+    const company = await Company.findById(user.companyId);
+
     return NextResponse.json<AuthResponse>({
       success: true,
       message: "User authenticated",
@@ -127,6 +132,16 @@ export async function GET(request: NextRequest) {
         id: String(user._id),
         email: user.email,
         name: user.name,
+        role: user.role,
+        companyId: String(user.companyId),
+        company: company
+          ? {
+              id: String(company._id),
+              name: company.name,
+              slug: company.slug,
+            }
+          : undefined,
+        status: user.status,
         createdAt: user.createdAt.toISOString(),
       },
     });

@@ -1,92 +1,153 @@
-This is a [Next.js](https://nextjs.org) project with full-stack authentication setup.
+# TalentHR - Human Resources Management System
 
-## 🚀 Quick Start
+A comprehensive HRMS built with Next.js, Material-UI, and MongoDB.
 
-### 1. Install Dependencies
+## Features
 
-```bash
-npm install
-```
+- **Role-Based Authentication**: Company Admin and Employer roles
+- **Secure JWT Authentication**: Access and refresh token system
+- **Modern UI**: Built with Material-UI (MUI)
+- **Production Ready**: Scalable architecture with proper error handling
 
-### 2. Set Up Environment Variables
+## Tech Stack
 
-Copy `.env.example` to `.env` and fill in your values:
+- **Frontend**: Next.js 16 (App Router), React 19, Material-UI
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT with HttpOnly cookies
+- **Validation**: Zod schemas
+- **Form Handling**: React Hook Form
 
-```bash
-cp .env.example .env
-```
+## Getting Started
 
-**Required variables:**
+### Prerequisites
 
-- `MONGODB_URI` - Your MongoDB connection string
-- `JWT_SECRET` - Secret key for JWT tokens (generate with `openssl rand -base64 32`)
-- `JWT_REFRESH_SECRET` - Secret key for refresh tokens
+- Node.js 20+
+- MongoDB (via Docker or local installation)
+- npm or yarn
 
-### 3. Run Development Server
+### Installation
 
-```bash
-npm run dev
-```
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser.
+2. **Set up environment variables:**
+   Create a `.env.local` file in the `frontend` directory:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/talenthrm
+   JWT_SECRET=your-super-secret-jwt-key-change-in-production
+   JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+   NODE_ENV=development
+   ```
 
-**That's it!** Both frontend and backend run on the same server. No separate backend needed!
+3. **Start MongoDB:**
+   ```bash
+   # Using Docker
+   docker-compose up -d mongodb
+   
+   # Or use local MongoDB
+   mongod
+   ```
 
-## 📁 Project Structure
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser:**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
 
 ```
 frontend/
 ├── app/
-│   ├── api/              # Backend API routes (Next.js API Routes)
-│   │   └── auth/        # Authentication endpoints
-│   ├── (auth)/          # Auth pages (login, signup)
-│   └── home/            # Protected home page
-├── components/           # React components
-├── lib/                 # Utilities (db, jwt, auth, config)
-├── models/              # MongoDB models
-└── types/               # TypeScript types
+│   ├── (auth)/
+│   │   ├── login/          # Login page
+│   │   └── signup/         # Signup page
+│   ├── api/
+│   │   └── auth/          # Authentication API endpoints
+│   ├── dashboard/
+│   │   ├── admin/         # Company Admin dashboard
+│   │   └── employer/      # Employer dashboard
+│   └── layout.tsx         # Root layout
+├── components/
+│   ├── auth/              # Authentication components
+│   └── theme-provider.tsx # MUI theme provider
+├── lib/
+│   ├── db.ts              # MongoDB connection
+│   ├── jwt.ts             # JWT utilities
+│   └── theme.tsx           # MUI theme configuration
+├── models/
+│   └── User.ts            # User model with roles
+├── types/
+│   └── auth.ts            # TypeScript types
+└── docs/                  # Documentation
 ```
 
-## 🔑 Features
+## User Roles
 
-- ✅ **Full-stack authentication** with JWT (access + refresh tokens)
-- ✅ **Password hashing** with bcrypt
-- ✅ **MongoDB** integration with Mongoose
-- ✅ **Cookie-based** token storage (httpOnly, secure)
-- ✅ **Type-safe** with TypeScript
-- ✅ **shadcn/ui** components
-- ✅ **Form validation** with Zod + react-hook-form
+### Company Admin
+- Full system access
+- Manage company settings
+- Create and manage Employer accounts
+- Access all employee data
 
-## 📚 Backend Architecture
+### Employer/HR Manager
+- Manage employees within assigned company
+- Post jobs and manage recruitment
+- Process leave requests
+- View reports and analytics
 
-**No separate backend server needed!** Next.js API routes handle everything.
+## API Endpoints
 
-- API routes in `app/api/` become backend endpoints
-- Everything runs on one port (3000)
-- See `BACKEND_GUIDE.md` for detailed explanation
+### Authentication
+- `POST /api/auth/signup` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/refresh` - Refresh access token
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Logout user
 
-## 🛠️ Available Scripts
+## Development
+
+### Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-- `npm run type-check` - Check TypeScript types
+- `npm run type-check` - Run TypeScript type checking
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Code Style
 
-## Learn More
+- TypeScript strict mode
+- ESLint + Prettier
+- Consistent naming conventions
 
-To learn more about Next.js, take a look at the following resources:
+## Security
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Passwords hashed with bcrypt (salt rounds: 10)
+- JWT tokens stored in HttpOnly cookies
+- Input validation with Zod
+- Role-based access control
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Next Steps
 
-## Deploy on Vercel
+1. ✅ Authentication system
+2. ⏳ Company management
+3. ⏳ Employee management
+4. ⏳ Recruitment system
+5. ⏳ Attendance & Leave management
+6. ⏳ Payroll system
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See the `docs/` directory for detailed documentation:
+- `TALENTHR_PROJECT.md` - Project overview
+- `TALENTHR_AUTH_GUIDE.md` - Authentication guide
+
+## License
+
+Private project - All rights reserved

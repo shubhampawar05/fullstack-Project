@@ -32,6 +32,16 @@ async function refreshTokens(): Promise<boolean> {
 }
 
 /**
+ * Check if we're currently on an auth page (login/signup)
+ * Prevents token refresh attempts on auth pages
+ */
+function isOnAuthPage(): boolean {
+  if (typeof window === "undefined") return false;
+  const pathname = window.location.pathname;
+  return pathname === "/login" || pathname === "/signup" || pathname.startsWith("/login/") || pathname.startsWith("/signup/");
+}
+
+/**
  * Enhanced fetch with automatic token refresh
  * Automatically retries requests with refreshed tokens if access token expires
  */
@@ -53,7 +63,9 @@ export async function apiFetch(
   console.log(`📥 [API Client] Response status: ${response.status} for ${url}`);
 
   // If we get a 401 (Unauthorized), try to refresh the token
-  if (response.status === 401) {
+  // BUT: Don't try to refresh if we're on auth pages (login/signup)
+  // This prevents infinite loops when checking auth on login page
+  if (response.status === 401 && !isOnAuthPage()) {
     console.log("⚠️ [API Client] Access token expired (401), refreshing...");
     // Try to refresh tokens
     const refreshSuccess = await refreshTokens();
@@ -81,13 +93,13 @@ export async function apiFetch(
       }
     } else {
       console.error(
-        "❌ [API Client] Token refresh failed, redirecting to login..."
+        "❌ [API Client] Token refresh failed - tokens expired"
       );
-      // Refresh failed - tokens are expired, redirect to login
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
+      // Don't redirect here - let the calling code handle redirects
+      // This prevents redirect loops when already on login page
     }
+  } else if (response.status === 401 && isOnAuthPage()) {
+    console.log("⚠️ [API Client] 401 on auth page - skipping token refresh to prevent loops");
   }
 
   return response;

@@ -70,8 +70,8 @@ export const config = {
       "JWT_SECRET",
       "dev-jwt-secret-change-in-production"
     ),
-    jwtExpiresIn: getNumberEnv("JWT_EXPIRES_IN", 120), // 2 minutes in seconds
-    jwtRefreshExpiresIn: getNumberEnv("JWT_REFRESH_EXPIRES_IN", 600), // 10 minutes in seconds
+    jwtExpiresIn: getNumberEnv("JWT_EXPIRES_IN", 86400), // 1 day in seconds (24 * 60 * 60)
+    jwtRefreshExpiresIn: getNumberEnv("JWT_REFRESH_EXPIRES_IN", 604800), // 7 days in seconds (7 * 24 * 60 * 60)
     jwtRefreshSecret: getOptionalEnv(
       "JWT_REFRESH_SECRET",
       "dev-refresh-secret-change-in-production"
