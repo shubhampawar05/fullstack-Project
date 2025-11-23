@@ -1,6 +1,6 @@
 /**
  * Company Admin Dashboard - TalentHR
- * Modern, premium UI with dummy data showcase
+ * Professional, Minimal, and Premium UI
  */
 
 "use client";
@@ -23,20 +23,32 @@ import {
   LinearProgress,
   Chip,
   IconButton,
+  Divider,
+  Stack,
+  useTheme,
 } from "@mui/material";
 import {
   People,
   TrendingUp,
   Work,
   EventNote,
-  CalendarToday,
   CheckCircle,
-  Schedule,
   Cancel,
   ArrowUpward,
   ArrowDownward,
   MoreVert,
   Notifications,
+  AccessTime,
+  AttachMoney,
+  Description,
+  MeetingRoom,
+  HelpOutline,
+  Cake,
+  Event,
+  EmojiEvents,
+  ChevronRight,
+  Add,
+  Circle,
 } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import {
@@ -47,8 +59,33 @@ import {
   getAttendanceStats,
 } from "@/utils/dummyData";
 
+// Minimal Card Component for consistency
+const MinimalCard = ({ children, sx = {}, ...props }: any) => (
+  <Card
+    elevation={0}
+    sx={{
+      height: "100%",
+      borderRadius: 3,
+      border: "1px solid",
+      borderColor: "divider",
+      background: "white",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        borderColor: "rgba(0,0,0,0.08)",
+      },
+      ...sx,
+    }}
+    {...props}
+  >
+    {children}
+  </Card>
+);
+
 export default function AdminDashboard() {
   const router = useRouter();
+  const theme = useTheme();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
@@ -65,12 +102,12 @@ export default function AdminDashboard() {
 
   const attendanceStats = getAttendanceStats();
 
-  // Recent activities
+  // Recent activities - Refined for minimalism
   const recentActivities = [
-    { type: 'join', name: 'Priya Sharma', action: 'joined the company', time: '2 hours ago', avatar: dummyEmployees[1].avatar },
-    { type: 'leave', name: 'Amit Kumar', action: 'requested leave', time: '4 hours ago', avatar: dummyEmployees[2].avatar },
-    { type: 'hire', name: 'Sneha Patel', action: 'moved to Offer stage', time: '5 hours ago', avatar: dummyCandidates[0].avatar },
-    { type: 'review', name: 'Vikram Singh', action: 'completed performance review', time: '1 day ago', avatar: dummyEmployees[3].avatar },
+    { type: 'join', name: 'Priya Sharma', action: 'joined as Senior Developer', time: '2h ago', avatar: dummyEmployees[1].avatar, color: "primary.main" },
+    { type: 'leave', name: 'Amit Kumar', action: 'requested sick leave', time: '4h ago', avatar: dummyEmployees[2].avatar, color: "warning.main" },
+    { type: 'hire', name: 'Sneha Patel', action: 'moved to Offer stage', time: '5h ago', avatar: dummyCandidates[0].avatar, color: "success.main" },
+    { type: 'review', name: 'Vikram Singh', action: 'completed Q4 review', time: '1d ago', avatar: dummyEmployees[3].avatar, color: "info.main" },
   ];
 
   // Top performers
@@ -82,16 +119,33 @@ export default function AdminDashboard() {
   // Pending leaves
   const pendingLeaveRequests = dummyLeaves
     .filter(l => l.status === 'Pending')
-    .slice(0, 5);
+    .slice(0, 4);
 
   // Active jobs with candidates
   const activeJobsWithCandidates = dummyJobs
     .filter(j => j.status === 'Active')
-    .slice(0, 4)
+    .slice(0, 3)
     .map(job => ({
       ...job,
       candidates: dummyCandidates.filter(c => c.jobId === job.id).length,
     }));
+
+  // Quick actions - Refined
+  const quickActions = [
+    { icon: <AccessTime fontSize="small" />, label: "Clock In", color: "#667eea", action: "clock" },
+    { icon: <EventNote fontSize="small" />, label: "Leaves", color: "#f59e0b", action: "leaves" },
+    { icon: <AttachMoney fontSize="small" />, label: "Payroll", color: "#10b981", action: "payroll" },
+    { icon: <Description fontSize="small" />, label: "Reports", color: "#8b5cf6", action: "reports" },
+    { icon: <MeetingRoom fontSize="small" />, label: "Meeting", color: "#3b82f6", action: "meeting" },
+    { icon: <HelpOutline fontSize="small" />, label: "Support", color: "#ec4899", action: "support" },
+  ];
+
+  // Upcoming events
+  const upcomingEvents = [
+    { type: "birthday", title: "Priya's Birthday", date: "Today", icon: <Cake fontSize="small" />, color: "#ec4899" },
+    { type: "meeting", title: "All Hands Meeting", date: "Nov 25, 10:00 AM", icon: <MeetingRoom fontSize="small" />, color: "#667eea" },
+    { type: "holiday", title: "Thanksgiving Day", date: "Nov 28", icon: <Event fontSize="small" />, color: "#f59e0b" },
+  ];
 
   // Check authentication
   useEffect(() => {
@@ -121,76 +175,52 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout role="company_admin">
       <Container maxWidth="xl" sx={{ pb: 4 }}>
-        {/* Hero Header */}
+        {/* Hero Header - Kept as requested but refined */}
         <Paper
           elevation={0}
           sx={{
-            p: 5,
+            p: { xs: 3, md: 5 },
             mb: 4,
             borderRadius: 4,
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
             position: "relative",
             overflow: "hidden",
-            boxShadow: "0 20px 60px rgba(118, 75, 162, 0.4)",
+            boxShadow: "0 20px 40px -10px rgba(118, 75, 162, 0.4)",
           }}
         >
-          {/* Animated background elements */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)",
-              animation: "pulse 4s ease-in-out infinite",
-              "@keyframes pulse": {
-                "0%, 100%": { transform: "scale(1)", opacity: 0.5 },
-                "50%": { transform: "scale(1.1)", opacity: 0.8 },
-              },
-            }}
-          />
           <Box sx={{ position: "relative", zIndex: 1 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Box>
-                <Typography variant="h3" fontWeight={700} gutterBottom sx={{ letterSpacing: "-1px" }}>
+                <Typography variant="h3" fontWeight={800} gutterBottom sx={{ letterSpacing: "-0.5px" }}>
                   Welcome back, Admin! 👋
                 </Typography>
-                <Typography variant="h6" sx={{ opacity: 0.95, fontWeight: 400, mb: 3 }}>
-                  Here's what's happening with your organization today
+                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400, mb: 3, maxWidth: 600 }}>
+                  Here's what's happening with your organization today. You have {stats.pendingLeaves} pending requests.
                 </Typography>
-                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                <Stack direction="row" spacing={2} flexWrap="wrap">
                   <Chip
                     label={`${stats.activeEmployees} Active Employees`}
-                    sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 600 }}
+                    sx={{ bgcolor: "rgba(255,255,255,0.15)", color: "white", fontWeight: 600, backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.1)" }}
                   />
                   <Chip
                     label={`${stats.activeJobs} Open Positions`}
-                    sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 600 }}
+                    sx={{ bgcolor: "rgba(255,255,255,0.15)", color: "white", fontWeight: 600, backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.1)" }}
                   />
-                  <Chip
-                    label={`${stats.pendingLeaves} Pending Approvals`}
-                    sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 600 }}
-                  />
-                </Box>
+                </Stack>
               </Box>
               <Box sx={{ display: { xs: "none", md: "block" } }}>
-                <AvatarGroup max={5} sx={{ "& .MuiAvatar-root": { border: "3px solid white", width: 56, height: 56 } }}>
+                <AvatarGroup max={4} sx={{ "& .MuiAvatar-root": { border: "3px solid rgba(255,255,255,0.2)", width: 60, height: 60, fontSize: 20 } }}>
                   {topPerformers.map((emp, idx) => (
                     <Avatar key={idx} src={emp.avatar} alt={emp.firstName} />
                   ))}
                 </AvatarGroup>
-                <Typography variant="caption" sx={{ display: "block", textAlign: "center", mt: 1, opacity: 0.9 }}>
-                  Top Performers
-                </Typography>
               </Box>
             </Box>
           </Box>
         </Paper>
 
-        {/* Key Metrics */}
+        {/* Key Metrics - Refined */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[
             {
@@ -198,388 +228,332 @@ export default function AdminDashboard() {
               value: stats.totalEmployees,
               change: "+12%",
               trend: "up",
-              icon: <People sx={{ fontSize: 40 }} />,
+              icon: <People sx={{ fontSize: 28 }} />,
               color: "#667eea",
-              subtitle: `${stats.activeEmployees} active`,
+              subtitle: "vs last month",
             },
             {
               title: "Attendance Rate",
               value: `${Math.round((attendanceStats.present / attendanceStats.totalDays) * 100)}%`,
               change: "+5%",
               trend: "up",
-              icon: <CheckCircle sx={{ fontSize: 40 }} />,
+              icon: <CheckCircle sx={{ fontSize: 28 }} />,
               color: "#10b981",
-              subtitle: "This month",
+              subtitle: "vs last month",
             },
             {
               title: "Active Recruitments",
               value: stats.activeJobs,
               change: "+3",
               trend: "up",
-              icon: <Work sx={{ fontSize: 40 }} />,
+              icon: <Work sx={{ fontSize: 28 }} />,
               color: "#f59e0b",
-              subtitle: `${stats.totalCandidates} candidates`,
+              subtitle: "new positions",
             },
             {
               title: "Pending Leaves",
               value: stats.pendingLeaves,
               change: "-2",
               trend: "down",
-              icon: <EventNote sx={{ fontSize: 40 }} />,
+              icon: <EventNote sx={{ fontSize: 28 }} />,
               color: "#ef4444",
-              subtitle: "Needs approval",
+              subtitle: "requests",
             },
           ].map((metric, idx) => (
             <Grid item xs={12} sm={6} lg={3} key={idx}>
-              <Card
-                elevation={0}
-                sx={{
-                  height: "100%",
-                  borderRadius: 4,
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                  border: "1px solid rgba(255,255,255,0.6)",
-                  background: "rgba(255, 255, 255, 0.7)",
-                  backdropFilter: "blur(12px)",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
-                  },
-                }}
-              >
+              <MinimalCard>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
                     <Box
                       sx={{
-                        p: 1.5,
-                        borderRadius: 3,
-                        background: `linear-gradient(135deg, ${metric.color}15 0%, ${metric.color}25 100%)`,
+                        p: 1.2,
+                        borderRadius: 2,
+                        bgcolor: `${metric.color}10`,
+                        color: metric.color,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <Box sx={{ color: metric.color }}>{metric.icon}</Box>
+                      {metric.icon}
                     </Box>
                     <Chip
-                      icon={metric.trend === "up" ? <ArrowUpward sx={{ fontSize: 16 }} /> : <ArrowDownward sx={{ fontSize: 16 }} />}
+                      icon={metric.trend === "up" ? <ArrowUpward sx={{ fontSize: 14 }} /> : <ArrowDownward sx={{ fontSize: 14 }} />}
                       label={metric.change}
                       size="small"
                       sx={{
-                        bgcolor: metric.trend === "up" ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        bgcolor: metric.trend === "up" ? "rgba(16, 185, 129, 0.08)" : "rgba(239, 68, 68, 0.08)",
                         color: metric.trend === "up" ? "#10b981" : "#ef4444",
                         fontWeight: 600,
-                        "& .MuiChip-icon": { color: "inherit" },
+                        height: 24,
+                        "& .MuiChip-icon": { color: "inherit", fontSize: 14 },
                       }}
                     />
                   </Box>
-                  <Typography variant="body2" color="text.secondary" fontWeight={500} gutterBottom>
-                    {metric.title}
-                  </Typography>
-                  <Typography variant="h3" fontWeight={700} sx={{ mb: 0.5 }}>
+                  <Typography variant="h4" fontWeight={700} sx={{ mb: 0.5, color: "text.primary" }}>
                     {metric.value}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {metric.subtitle}
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                    {metric.title}
                   </Typography>
                 </CardContent>
-              </Card>
+              </MinimalCard>
             </Grid>
           ))}
         </Grid>
 
         <Grid container spacing={3}>
-          {/* Recent Activity */}
-          <Grid item xs={12} lg={6}>
-            <Card
-              elevation={0}
-              sx={{
-                height: "100%",
-                borderRadius: 4,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                background: "rgba(255, 255, 255, 0.7)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
+          {/* Quick Actions - Clean & Minimal */}
+          <Grid item xs={12}>
+            <MinimalCard sx={{ p: 1 }}>
+              <Grid container spacing={1}>
+                {quickActions.map((item, idx) => (
+                  <Grid item xs={6} sm={4} md={2} key={idx}>
+                    <Button
+                      fullWidth
+                      onClick={() => console.log(item.action)}
+                      sx={{
+                        flexDirection: "row",
+                        gap: 1.5,
+                        py: 1.5,
+                        px: 2,
+                        borderRadius: 2,
+                        color: "text.secondary",
+                        justifyContent: "flex-start",
+                        "&:hover": {
+                          bgcolor: `${item.color}08`,
+                          color: item.color,
+                        },
+                      }}
+                    >
+                      <Box sx={{ color: item.color, display: "flex" }}>{item.icon}</Box>
+                      <Typography variant="body2" fontWeight={600}>
+                        {item.label}
+                      </Typography>
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
+            </MinimalCard>
+          </Grid>
+
+          {/* Recent Activity - Redesigned as Timeline */}
+          <Grid item xs={12} lg={4}>
+            <MinimalCard>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                   <Typography variant="h6" fontWeight={700}>
                     Recent Activity
                   </Typography>
-                  <IconButton size="small">
-                    <Notifications />
-                  </IconButton>
+                  <Button size="small" endIcon={<ChevronRight />} sx={{ color: "text.secondary" }}>
+                    View All
+                  </Button>
                 </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                <Stack spacing={0}>
                   {recentActivities.map((activity, idx) => (
-                    <Box key={idx} sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                      <Avatar src={activity.avatar} sx={{ width: 48, height: 48, border: "2px solid #f0f0f0" }} />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight={600}>
-                          {activity.name}
+                    <Box key={idx} sx={{ position: "relative", pb: idx === recentActivities.length - 1 ? 0 : 3, pl: 3 }}>
+                      {/* Timeline Line */}
+                      {idx !== recentActivities.length - 1 && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            left: 5,
+                            top: 24,
+                            bottom: 0,
+                            width: 2,
+                            bgcolor: "grey.100",
+                          }}
+                        />
+                      )}
+                      {/* Timeline Dot */}
+                      <Circle
+                        sx={{
+                          position: "absolute",
+                          left: 0,
+                          top: 6,
+                          fontSize: 12,
+                          color: activity.color,
+                          bgcolor: "white",
+                          zIndex: 1,
+                        }}
+                      />
+                      <Box>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          <Box component="span" fontWeight={600}>
+                            {activity.name}
+                          </Box>{" "}
+                          <Box component="span" color="text.secondary">
+                            {activity.action}
+                          </Box>
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {activity.action}
+                        <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                          {activity.time}
                         </Typography>
                       </Box>
-                      <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
-                        {activity.time}
-                      </Typography>
                     </Box>
                   ))}
-                </Box>
-                <Button fullWidth variant="outlined" sx={{ mt: 3, borderRadius: 2 }}>
-                  View All Activity
-                </Button>
+                </Stack>
               </CardContent>
-            </Card>
+            </MinimalCard>
           </Grid>
 
-          {/* Pending Leave Requests */}
-          <Grid item xs={12} lg={6}>
-            <Card
-              elevation={0}
-              sx={{
-                height: "100%",
-                borderRadius: 4,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                background: "rgba(255, 255, 255, 0.7)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
+          {/* Pending Leave Requests - Redesigned as Clean List */}
+          <Grid item xs={12} lg={8}>
+            <MinimalCard>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                   <Typography variant="h6" fontWeight={700}>
-                    Pending Leave Requests
+                    Pending Leaves
                   </Typography>
-                  <Chip label={`${stats.pendingLeaves} Pending`} color="warning" size="small" />
+                  <Chip label={`${stats.pendingLeaves} New`} color="error" size="small" sx={{ height: 24, fontWeight: 600 }} />
                 </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {pendingLeaveRequests.map((leave, idx) => (
-                    <Box key={idx}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                    <Box
+                      key={idx}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        p: 2,
+                        borderRadius: 2,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          borderColor: "primary.main",
+                          bgcolor: "primary.50",
+                        },
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Avatar src={dummyEmployees.find(e => e.id === leave.employeeId)?.avatar} sx={{ width: 40, height: 40 }} />
                         <Box>
-                          <Typography variant="body2" fontWeight={600}>
+                          <Typography variant="subtitle2" fontWeight={600}>
                             {leave.employeeName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             {leave.leaveType} • {leave.days} day{leave.days > 1 ? 's' : ''}
                           </Typography>
                         </Box>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <IconButton size="small" color="success" sx={{ bgcolor: "rgba(16, 185, 129, 0.1)" }}>
+                      </Box>
+                      
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <Box sx={{ textAlign: "right", display: { xs: "none", sm: "block" } }}>
+                          <Typography variant="caption" display="block" color="text.secondary">
+                            Duration
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {new Date(leave.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - {new Date(leave.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </Typography>
+                        </Box>
+                        <Stack direction="row" spacing={1}>
+                          <IconButton size="small" sx={{ color: "success.main", bgcolor: "success.50", "&:hover": { bgcolor: "success.100" } }}>
                             <CheckCircle fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" color="error" sx={{ bgcolor: "rgba(239, 68, 68, 0.1)" }}>
+                          <IconButton size="small" sx={{ color: "error.main", bgcolor: "error.50", "&:hover": { bgcolor: "error.100" } }}>
                             <Cancel fontSize="small" />
                           </IconButton>
-                        </Box>
+                        </Stack>
                       </Box>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-                        {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                      </Typography>
-                      {idx < pendingLeaveRequests.length - 1 && <Box sx={{ height: 1, bgcolor: "divider", mt: 2 }} />}
                     </Box>
                   ))}
                 </Box>
-                <Button fullWidth variant="outlined" sx={{ mt: 3, borderRadius: 2 }}>
+                <Button fullWidth sx={{ mt: 2, color: "text.secondary" }}>
                   View All Requests
                 </Button>
               </CardContent>
-            </Card>
+            </MinimalCard>
           </Grid>
 
-          {/* Active Recruitments */}
-          <Grid item xs={12}>
-            <Card
-              elevation={0}
-              sx={{
-                borderRadius: 4,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                background: "rgba(255, 255, 255, 0.7)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
+          {/* Active Recruitments - Simplified */}
+          <Grid item xs={12} lg={8}>
+            <MinimalCard>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                   <Typography variant="h6" fontWeight={700}>
                     Active Recruitments
                   </Typography>
-                  <Button variant="contained" size="small" sx={{ borderRadius: 2 }}>
-                    Post New Job
+                  <Button startIcon={<Add />} variant="contained" size="small" sx={{ borderRadius: 2, textTransform: "none" }}>
+                    Post Job
                   </Button>
                 </Box>
                 <Grid container spacing={2}>
                   {activeJobsWithCandidates.map((job, idx) => (
-                    <Grid item xs={12} sm={6} lg={3} key={idx}>
-                      <Card
-                        elevation={0}
+                    <Grid item xs={12} md={4} key={idx}>
+                      <Box
                         sx={{
-                          p: 2.5,
-                          borderRadius: 3,
-                          border: "1px solid rgba(0,0,0,0.08)",
-                          transition: "all 0.2s ease",
-                          "&:hover": {
-                            transform: "translateY(-4px)",
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                          },
+                          p: 2,
+                          borderRadius: 2,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          height: "100%",
                         }}
                       >
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start", mb: 2 }}>
-                          <Chip label={job.department} size="small" color="primary" variant="outlined" />
-                          <IconButton size="small">
-                            <MoreVert fontSize="small" />
-                          </IconButton>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                          <Typography variant="subtitle2" fontWeight={700}>
+                            {job.title}
+                          </Typography>
+                          <Chip label={job.department} size="small" sx={{ height: 20, fontSize: 10, bgcolor: "grey.100" }} />
                         </Box>
-                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                          {job.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 2 }}>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
                           {job.location} • {job.type}
                         </Typography>
-                        <Box sx={{ mb: 2 }}>
-                          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              Applicants
-                            </Typography>
-                            <Typography variant="caption" fontWeight={600}>
-                              {job.candidates}/{job.applicants}
-                            </Typography>
-                          </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={(job.candidates / job.applicants) * 100}
-                            sx={{ height: 6, borderRadius: 3 }}
-                          />
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <AvatarGroup max={3} sx={{ "& .MuiAvatar-root": { width: 24, height: 24, fontSize: 12 } }}>
+                            {dummyCandidates.filter(c => c.jobId === job.id).map((c, i) => (
+                              <Avatar key={i} src={c.avatar} />
+                            ))}
+                          </AvatarGroup>
+                          <Typography variant="caption" fontWeight={600} color="primary">
+                            {job.candidates} Applicants
+                          </Typography>
                         </Box>
-                        <Button fullWidth variant="outlined" size="small" sx={{ borderRadius: 2 }}>
-                          View Pipeline
-                        </Button>
-                      </Card>
+                      </Box>
                     </Grid>
                   ))}
                 </Grid>
               </CardContent>
-            </Card>
+            </MinimalCard>
           </Grid>
 
-          {/* Top Performers */}
-          <Grid item xs={12} lg={6}>
-            <Card
-              elevation={0}
-              sx={{
-                height: "100%",
-                borderRadius: 4,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                background: "rgba(255, 255, 255, 0.7)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
+          {/* Upcoming Events - Minimal List */}
+          <Grid item xs={12} lg={4}>
+            <MinimalCard>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
-                  Top Performers
+                  Upcoming Events
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 3 }}>
-                  Based on performance ratings
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-                  {topPerformers.map((emp, idx) => (
+                <Stack spacing={2} sx={{ mt: 2 }}>
+                  {upcomingEvents.map((event, idx) => (
                     <Box key={idx} sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                       <Box
                         sx={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: "50%",
+                          width: 40,
+                          height: 40,
+                          borderRadius: 2,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          bgcolor: idx < 3 ? "primary.main" : "grey.300",
-                          color: "white",
-                          fontWeight: 700,
-                          fontSize: 14,
+                          bgcolor: `${event.color}10`,
+                          color: event.color,
                         }}
                       >
-                        {idx + 1}
+                        {event.icon}
                       </Box>
-                      <Avatar src={emp.avatar} sx={{ width: 48, height: 48 }} />
                       <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight={600}>
-                          {emp.firstName} {emp.lastName}
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          {event.title}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {emp.position} • {emp.department}
+                          {event.date}
                         </Typography>
                       </Box>
-                      <Chip
-                        label={`${emp.performance.toFixed(1)} ⭐`}
-                        size="small"
-                        sx={{ bgcolor: "rgba(255, 193, 7, 0.1)", color: "#f59e0b", fontWeight: 600 }}
-                      />
                     </Box>
                   ))}
-                </Box>
+                </Stack>
               </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Quick Stats */}
-          <Grid item xs={12} lg={6}>
-            <Card
-              elevation={0}
-              sx={{
-                height: "100%",
-                borderRadius: 4,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(255,255,255,0.6)",
-                background: "rgba(255, 255, 255, 0.7)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  Department Overview
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 3 }}>
-                  Employee distribution across departments
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {Object.entries(
-                    dummyEmployees.reduce((acc, emp) => {
-                      acc[emp.department] = (acc[emp.department] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
-                  )
-                    .sort(([, a], [, b]) => b - a)
-                    .slice(0, 6)
-                    .map(([dept, count], idx) => (
-                      <Box key={idx}>
-                        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                          <Typography variant="body2" fontWeight={600}>
-                            {dept}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {count} employees
-                          </Typography>
-                        </Box>
-                        <LinearProgress
-                          variant="determinate"
-                          value={(count / stats.totalEmployees) * 100}
-                          sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            bgcolor: "rgba(0,0,0,0.05)",
-                            "& .MuiLinearProgress-bar": {
-                              borderRadius: 4,
-                              background: `linear-gradient(90deg, #667eea ${idx * 10}%, #764ba2 100%)`,
-                            },
-                          }}
-                        />
-                      </Box>
-                    ))}
-                </Box>
-              </CardContent>
-            </Card>
+            </MinimalCard>
           </Grid>
         </Grid>
       </Container>

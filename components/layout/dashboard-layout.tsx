@@ -42,6 +42,9 @@ import {
   AccountCircle,
   Notifications,
   ChevronLeft,
+  AccessTime,
+  School,
+  AttachMoney,
 } from "@mui/icons-material";
 
 const DRAWER_WIDTH = 280;
@@ -109,6 +112,21 @@ function DashboardLayoutContent({
           },
         ]
       : []),
+    {
+      title: "Attendance",
+      path: "/dashboard/attendance",
+      icon: <AccessTime />,
+    },
+    {
+      title: "Learning & Development",
+      path: "/dashboard/learning",
+      icon: <School />,
+    },
+    {
+      title: "Payroll",
+      path: "/dashboard/payroll",
+      icon: <AttachMoney />,
+    },
     ...(role === "company_admin"
       ? [
           {

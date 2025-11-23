@@ -1,368 +1,228 @@
 /**
- * Employee List Component - TalentHR
- * Displays list of all employees with management actions
+ * Employee List Component - Premium UI
+ * Features: Search, filters, employee cards, actions
  */
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import {
   Box,
-  Paper,
+  Card,
+  CardContent,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Grid,
+  Avatar,
   Chip,
-  IconButton,
   Button,
-  Tooltip,
-  Alert,
-  CircularProgress,
   TextField,
   InputAdornment,
-  Select,
-  FormControl,
-  InputLabel,
   MenuItem,
-  Snackbar,
 } from "@mui/material";
 import {
-  Edit,
-  Visibility,
-  Person,
   Search,
   FilterList,
+  Add,
+  Email,
+  Phone,
+  LocationOn,
 } from "@mui/icons-material";
-import EmployeeFormDialog from "./employee-form-dialog";
-import EmployeeDetailDialog from "./employee-detail-dialog";
 
 interface Employee {
   id: string;
-  userId: string;
-  employeeId: string;
   name: string;
   email: string;
-  role: string;
-  department: {
-    id: string;
-    name: string;
-    code?: string;
-  } | null;
-  position?: string;
-  hireDate: string;
-  employmentType: string;
-  manager: {
-    id: string;
-    name: string;
-  } | null;
-  status: string;
+  phone: string;
+  position: string;
+  department: string;
+  status: "Active" | "On Leave" | "Inactive";
+  avatar?: string;
+  joinDate: string;
+  location: string;
 }
 
-interface EmployeeListProps {
-  onRefresh?: () => void;
-}
+const dummyEmployees: Employee[] = [
+  { id: "1", name: "Sarah Johnson", email: "sarah.j@company.com", phone: "+1 234-567-8901", position: "Team Lead", department: "Engineering", status: "Active", joinDate: "2022-01-15", location: "New York" },
+  { id: "2", name: "Michael Chen", email: "michael.c@company.com", phone: "+1 234-567-8902", position: "Senior Developer", department: "Engineering", status: "Active", joinDate: "2021-06-20", location: "San Francisco" },
+  { id: "3", name: "Emily Davis", email: "emily.d@company.com", phone: "+1 234-567-8903", position: "Product Manager", department: "Product", status: "Active", joinDate: "2020-03-10", location: "Austin" },
+  { id: "4", name: "James Wilson", email: "james.w@company.com", phone: "+1 234-567-8904", position: "UX Designer", department: "Design", status: "On Leave", joinDate: "2021-11-05", location: "Seattle" },
+  { id: "5", name: "Priya Sharma", email: "priya.s@company.com", phone: "+1 234-567-8905", position: "HR Manager", department: "Human Resources", status: "Active", joinDate: "2019-08-12", location: "Boston" },
+  { id: "6", name: "Amit Kumar", email: "amit.k@company.com", phone: "+1 234-567-8906", position: "Marketing Lead", department: "Marketing", status: "Active", joinDate: "2022-02-28", location: "Chicago" },
+];
 
-export default function EmployeeList({ onRefresh }: EmployeeListProps) {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
-  const [formDialog, setFormDialog] = useState<{
-    open: boolean;
-    employee: Employee | null;
-  }>({ open: false, employee: null });
-  const [detailDialog, setDetailDialog] = useState<{
-    open: boolean;
-    employeeId: string | null;
-  }>({ open: false, employeeId: null });
-
-  // Filters
-  const [searchTerm, setSearchTerm] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [departments, setDepartments] = useState<any[]>([]);
-
-  const fetchDepartments = useCallback(async () => {
-    try {
-      const response = await fetch("/api/departments", {
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setDepartments(data.departments || []);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching departments:", error);
-    }
-  }, []);
-
-  const fetchEmployees = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (departmentFilter !== "all") params.append("departmentId", departmentFilter);
-      if (statusFilter !== "all") params.append("status", statusFilter);
-      if (searchTerm) params.append("search", searchTerm);
-
-      const response = await fetch(`/api/employees?${params.toString()}`, {
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          setError("Session expired. Please login again.");
-          return;
-        }
-        const errorData = await response.json().catch(() => ({
-          message: "Failed to fetch employees",
-        }));
-        setError(errorData.message || "Failed to fetch employees");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        setError(data.message || "Failed to fetch employees");
-        return;
-      }
-
-      setEmployees(data.employees || []);
-      setError("");
-    } catch (err) {
-      console.error("Fetch employees error:", err);
-      setError("Failed to load employees. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, departmentFilter, statusFilter]);
-
-  useEffect(() => {
-    fetchEmployees();
-    fetchDepartments();
-  }, [fetchEmployees, fetchDepartments]);
-
-  const handleEditSuccess = () => {
-    setFormDialog({ open: false, employee: null });
-    fetchEmployees();
-    onRefresh?.();
-  };
-
-  const getStatusColor = (status: string) => {
+export default function EmployeeList() {
+  const getStatusColor = (status: Employee["status"]) => {
     switch (status) {
-      case "active":
-        return "success";
-      case "on-leave":
-        return "warning";
-      case "terminated":
-        return "error";
-      case "resigned":
-        return "default";
-      default:
-        return "default";
+      case "Active": return "#10b981";
+      case "On Leave": return "#f59e0b";
+      case "Inactive": return "#ef4444";
+      default: return "#6b7280";
     }
   };
-
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
-    <>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Filters */}
-      <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
-        <TextField
-          placeholder="Search by name, email, employee ID..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          size="small"
-          sx={{ flexGrow: 1, minWidth: 200 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search fontSize="small" />
-              </InputAdornment>
-            ),
+    <Box>
+      {/* Header */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Box>
+          <Typography variant="h4" fontWeight={700} gutterBottom>
+            Employees
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage your workforce
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          sx={{
+            borderRadius: 2,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
           }}
-        />
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Department</InputLabel>
-          <Select
-            value={departmentFilter}
-            label="Department"
-            onChange={(e) => setDepartmentFilter(e.target.value)}
-          >
-            <MenuItem value="all">All Departments</MenuItem>
-            {departments.map((dept) => (
-              <MenuItem key={dept.id} value={dept.id}>
-                {dept.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={statusFilter}
-            label="Status"
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="on-leave">On Leave</MenuItem>
-            <MenuItem value="terminated">Terminated</MenuItem>
-            <MenuItem value="resigned">Resigned</MenuItem>
-          </Select>
-        </FormControl>
+        >
+          Add Employee
+        </Button>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Employee ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Department</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {employees.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {searchTerm || departmentFilter !== "all" || statusFilter !== "all"
-                      ? "No employees found matching your filters"
-                      : "No employees yet. Create employee records for users."}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell>
-                    <Chip
-                      label={employee.employeeId}
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Person fontSize="small" color="action" />
+      {/* Filters */}
+      <Card elevation={0} sx={{ mb: 3, borderRadius: 4, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+        <CardContent sx={{ p: 3 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                placeholder="Search employees..."
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ borderRadius: 2 }}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField select fullWidth defaultValue="all" label="Department">
+                <MenuItem value="all">All Departments</MenuItem>
+                <MenuItem value="engineering">Engineering</MenuItem>
+                <MenuItem value="product">Product</MenuItem>
+                <MenuItem value="design">Design</MenuItem>
+                <MenuItem value="hr">Human Resources</MenuItem>
+                <MenuItem value="marketing">Marketing</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <TextField select fullWidth defaultValue="all" label="Status">
+                <MenuItem value="all">All Status</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="on-leave">On Leave</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Employee Grid */}
+      <Grid container spacing={3}>
+        {dummyEmployees.map((employee) => (
+          <Grid item xs={12} sm={6} lg={4} key={employee.id}>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                background: "rgba(255,255,255,0.7)",
+                backdropFilter: "blur(12px)",
+                transition: "all 0.3s",
+                "&:hover": {
+                  transform: "translateY(-8px)",
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                {/* Header */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                  <Avatar
+                    sx={{
+                      width: 64,
+                      height: 64,
+                      border: "3px solid #f0f0f0",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {employee.name.charAt(0)}
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h6" fontWeight={700}>
                       {employee.name}
-                    </Box>
-                  </TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                  <TableCell>
-                    {employee.department ? (
-                      <Chip
-                        label={employee.department.name}
-                        size="small"
-                        variant="outlined"
-                      />
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No Department
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>{employee.position || "N/A"}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={employee.status}
-                      color={getStatusColor(employee.status) as any}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Tooltip title="View details">
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setDetailDialog({ open: true, employeeId: employee.id })
-                          }
-                        >
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit employee">
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setFormDialog({ open: true, employee })
-                          }
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {employee.position}
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={employee.status}
+                    size="small"
+                    sx={{
+                      bgcolor: `${getStatusColor(employee.status)}15`,
+                      color: getStatusColor(employee.status),
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
 
-      {/* Form Dialog */}
-      {formDialog.open && (
-        <EmployeeFormDialog
-          open={formDialog.open}
-          employee={formDialog.employee}
-          onClose={() => setFormDialog({ open: false, employee: null })}
-          onSuccess={handleEditSuccess}
-        />
-      )}
+                {/* Details */}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 3 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Email sx={{ fontSize: 16, color: "text.secondary" }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {employee.email}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Phone sx={{ fontSize: 16, color: "text.secondary" }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {employee.phone}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <LocationOn sx={{ fontSize: 16, color: "text.secondary" }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {employee.location}
+                    </Typography>
+                  </Box>
+                </Box>
 
-      {/* Detail Dialog */}
-      {detailDialog.open && (
-        <EmployeeDetailDialog
-          open={detailDialog.open}
-          employeeId={detailDialog.employeeId!}
-          onClose={() => setDetailDialog({ open: false, employeeId: null })}
-          onEdit={() => {
-            const emp = employees.find((e) => e.id === detailDialog.employeeId);
-            setDetailDialog({ open: false, employeeId: null });
-            if (emp) {
-              setFormDialog({ open: true, employee: emp });
-            }
-          }}
-        />
-      )}
-
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ open: false, message: "" })}
-        message={snackbar.message}
-      />
-    </>
+                {/* Footer */}
+                <Box
+                  sx={{
+                    pt: 2,
+                    borderTop: "1px solid rgba(0,0,0,0.08)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {employee.department}
+                    </Typography>
+                    <Typography variant="caption" display="block" fontWeight={600}>
+                      Joined {new Date(employee.joinDate).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  <Button size="small" variant="outlined" sx={{ borderRadius: 2 }}>
+                    View Profile
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
   );
 }
-
