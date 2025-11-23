@@ -104,10 +104,10 @@ export async function GET(request: NextRequest) {
         userStatus: emp.userId?.status,
         department: emp.departmentId
           ? {
-              id: String(emp.departmentId._id),
-              name: emp.departmentId.name,
-              code: emp.departmentId.code,
-            }
+            id: String(emp.departmentId._id),
+            name: emp.departmentId.name,
+            code: emp.departmentId.code,
+          }
           : null,
         position: emp.position,
         hireDate: emp.hireDate?.toISOString(),
@@ -115,10 +115,10 @@ export async function GET(request: NextRequest) {
         salary: emp.salary,
         manager: emp.managerId
           ? {
-              id: String(emp.managerId._id),
-              name: emp.managerId.name,
-              email: emp.managerId.email,
-            }
+            id: String(emp.managerId._id),
+            name: emp.managerId.name,
+            email: emp.managerId.email,
+          }
           : null,
         workLocation: emp.workLocation,
         phone: emp.phone,
@@ -167,126 +167,163 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userId, departmentId, position, hireDate, employmentType, salary, managerId, workLocation, phone, address, emergencyContact } = body;
-
-    // Validate required fields
-    if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User ID is required",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if user exists and belongs to same company
-    const targetUser = await User.findById(userId);
-    if (!targetUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User not found",
-        },
-        { status: 404 }
-      );
-    }
-
-    if (String(targetUser.companyId) !== String(user.companyId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User does not belong to your company",
-        },
-        { status: 403 }
-      );
-    }
-
-    // Check if employee record already exists
-    const existingEmployee = await Employee.findOne({ userId });
-    if (existingEmployee) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Employee record already exists for this user",
-        },
-        { status: 409 }
-      );
-    }
-
-    // Validate department if provided
-    if (departmentId) {
-      const department = await Department.findById(departmentId);
-      if (!department || String(department.companyId) !== String(user.companyId)) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Invalid department",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate manager if provided
-    if (managerId) {
-      const manager = await User.findById(managerId);
-      if (!manager || String(manager.companyId) !== String(user.companyId)) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Invalid manager",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Create employee record
-    const employee = await Employee.create({
+    const {
       userId,
-      departmentId: departmentId || undefined,
-      position: position || undefined,
-      hireDate: hireDate ? new Date(hireDate) : new Date(),
-      employmentType: employmentType || "full-time",
-      salary: salary || undefined,
-      managerId: managerId || undefined,
-      workLocation: workLocation || undefined,
-      phone: phone || undefined,
-      address: address || undefined,
-      emergencyContact: emergencyContact || undefined,
-      status: "active",
-    });
+      newUser,
+      departmentId,
+      position,
+      hireDate,
+      employmentType,
+      salary,
+      managerId,
+      workLocation,
+      phone,
+      address,
+      emergencyContact,
+    } = body;
 
-    // Populate and return
-    const populatedEmployee = await Employee.findById(employee._id)
-      .populate("userId", "name email role status")
-      .populate("departmentId", "name code")
-      .populate("managerId", "name email");
+    // Start a session for transaction
+    const session = await User.db.startSession();
+    session.startTransaction();
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Employee created successfully",
-        employee: {
-          id: String(populatedEmployee!._id),
-          userId: String(populatedEmployee!.userId),
-          employeeId: populatedEmployee!.employeeId,
-          name: (populatedEmployee!.userId as any)?.name,
-          email: (populatedEmployee!.userId as any)?.email,
-          department: populatedEmployee!.departmentId
-            ? {
+    try {
+      let targetUserId = userId;
+
+      // Case 1: Create new user
+      if (newUser) {
+        const { name, email, password } = newUser;
+
+        if (!name || !email || !password) {
+          throw new Error("Name, email, and password are required for new user");
+        }
+
+        // Check if user already exists
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
+          throw new Error("User with this email already exists");
+        }
+
+        // Hash password
+        const bcrypt = require("bcrypt");
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create user
+        const newUserData = await User.create(
+          [
+            {
+              name,
+              email: email.toLowerCase(),
+              password: hashedPassword,
+              role: "employee",
+              companyId: user.companyId,
+              status: "active",
+            },
+          ],
+          { session }
+        );
+
+        targetUserId = newUserData[0]._id;
+      }
+      // Case 2: Use existing user
+      else {
+        if (!targetUserId) {
+          throw new Error("User ID is required");
+        }
+
+        // Check if user exists and belongs to same company
+        const targetUser = await User.findById(targetUserId);
+        if (!targetUser) {
+          throw new Error("User not found");
+        }
+
+        if (String(targetUser.companyId) !== String(user.companyId)) {
+          throw new Error("User does not belong to your company");
+        }
+      }
+
+      // Check if employee record already exists
+      const existingEmployee = await Employee.findOne({ userId: targetUserId });
+      if (existingEmployee) {
+        throw new Error("Employee record already exists for this user");
+      }
+
+      // Validate department if provided
+      if (departmentId) {
+        const department = await Department.findById(departmentId);
+        if (
+          !department ||
+          String(department.companyId) !== String(user.companyId)
+        ) {
+          throw new Error("Invalid department");
+        }
+      }
+
+      // Validate manager if provided
+      if (managerId) {
+        const manager = await User.findById(managerId);
+        if (!manager || String(manager.companyId) !== String(user.companyId)) {
+          throw new Error("Invalid manager");
+        }
+      }
+
+      // Create employee record
+      const employee = await Employee.create(
+        [
+          {
+            userId: targetUserId,
+            departmentId: departmentId || undefined,
+            position: position || undefined,
+            hireDate: hireDate ? new Date(hireDate) : new Date(),
+            employmentType: employmentType || "full-time",
+            salary: salary || undefined,
+            managerId: managerId || undefined,
+            workLocation: workLocation || undefined,
+            phone: phone || undefined,
+            address: address || undefined,
+            emergencyContact: emergencyContact || undefined,
+            status: "active",
+          },
+        ],
+        { session }
+      );
+
+      await session.commitTransaction();
+
+      // Populate and return
+      const populatedEmployee = await Employee.findById(employee[0]._id)
+        .populate("userId", "name email role status")
+        .populate("departmentId", "name code")
+        .populate("managerId", "name email");
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Employee created successfully",
+          employee: {
+            id: String(populatedEmployee!._id),
+            userId: String(populatedEmployee!.userId),
+            employeeId: populatedEmployee!.employeeId,
+            name: (populatedEmployee!.userId as any)?.name,
+            email: (populatedEmployee!.userId as any)?.email,
+            department: populatedEmployee!.departmentId
+              ? {
                 id: String((populatedEmployee!.departmentId as any)._id),
                 name: (populatedEmployee!.departmentId as any).name,
               }
-            : null,
-          position: populatedEmployee!.position,
-          hireDate: populatedEmployee!.hireDate.toISOString(),
-          status: populatedEmployee!.status,
+              : null,
+            position: populatedEmployee!.position,
+            hireDate: populatedEmployee!.hireDate.toISOString(),
+            status: populatedEmployee!.status,
+          },
         },
-      },
-      { status: 201 }
-    );
+        { status: 201 }
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   } catch (error) {
     console.error("Create employee error:", error);
     return NextResponse.json(
@@ -295,8 +332,7 @@ export async function POST(request: NextRequest) {
         message:
           error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: error instanceof Error && error.message.includes("exists") ? 409 : 500 }
     );
   }
 }
-

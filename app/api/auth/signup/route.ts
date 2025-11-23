@@ -13,6 +13,9 @@ import { SignupCredentials, AuthResponse, UserRole } from "@/types/auth";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
 import Company from "@/models/Company";
+import Employee from "@/models/Employee";
+import Department from "@/models/Department";
+import LeaveType from "@/models/LeaveType";
 import Invitation from "@/models/Invitation";
 import OTP from "@/models/OTP";
 import { generateTokenPair, TokenPayload } from "@/lib/jwt";
@@ -204,6 +207,42 @@ async function handleCompanyAdminSignup(body: any) {
     );
 
     const newUser = user[0];
+
+    // Create employee record for the admin
+    const employee = await Employee.create(
+      [
+        {
+          userId: newUser._id,
+          hireDate: new Date(),
+          employmentType: "full-time",
+          position: "Company Administrator",
+          status: "active",
+        },
+      ],
+      { session }
+    );
+
+    // Auto-seed departments and leave types for new company
+    const DEFAULT_DEPARTMENTS = [
+      { name: "Engineering", description: "Software development and technical teams", companyId: newCompany._id, status: "active" },
+      { name: "Human Resources", description: "HR and people operations", companyId: newCompany._id, status: "active" },
+      { name: "Sales", description: "Sales and business development", companyId: newCompany._id, status: "active" },
+      { name: "Marketing", description: "Marketing and brand management", companyId: newCompany._id, status: "active" },
+      { name: "Finance", description: "Finance and accounting", companyId: newCompany._id, status: "active" },
+      { name: "Operations", description: "Operations and logistics", companyId: newCompany._id, status: "active" },
+      { name: "Customer Support", description: "Customer service and support", companyId: newCompany._id, status: "active" },
+      { name: "Product", description: "Product management and strategy", companyId: newCompany._id, status: "active" },
+    ];
+
+    const DEFAULT_LEAVE_TYPES = [
+      { companyId: newCompany._id, name: "Sick Leave", code: "SL", annualQuota: 10, carryForward: false, requiresApproval: true, color: "#f44336", status: "active" },
+      { companyId: newCompany._id, name: "Vacation Leave", code: "VL", annualQuota: 15, carryForward: true, maxCarryForward: 5, requiresApproval: true, color: "#2196f3", status: "active" },
+      { companyId: newCompany._id, name: "Personal Leave", code: "PL", annualQuota: 5, carryForward: false, requiresApproval: true, color: "#ff9800", status: "active" },
+      { companyId: newCompany._id, name: "Casual Leave", code: "CL", annualQuota: 12, carryForward: false, requiresApproval: false, color: "#4caf50", status: "active" },
+    ];
+
+    await Department.insertMany(DEFAULT_DEPARTMENTS, { session });
+    await LeaveType.insertMany(DEFAULT_LEAVE_TYPES, { session });
 
     await session.commitTransaction();
 
@@ -418,10 +457,10 @@ async function handleInvitationSignup(body: any) {
           companyId: String(invitation.companyId),
           company: company
             ? {
-                id: String(company._id),
-                name: company.name,
-                slug: company.slug,
-              }
+              id: String(company._id),
+              name: company.name,
+              slug: company.slug,
+            }
             : undefined,
           status: newUser.status,
           createdAt: newUser.createdAt.toISOString(),

@@ -41,6 +41,9 @@ import {
   AccountCircle,
   Notifications,
   ChevronLeft,
+  AccessTime,
+  TrendingUp,
+  Assessment,
 } from "@mui/icons-material";
 
 const DRAWER_WIDTH = 280;
@@ -77,6 +80,21 @@ function DashboardLayoutContent({
       title: "Dashboard",
       path: `/dashboard/${role === "company_admin" ? "admin" : role}`,
       icon: <Dashboard />,
+    },
+    {
+      title: "Attendance & Leave",
+      path: "/dashboard/attendance",
+      icon: <AccessTime />,
+    },
+    {
+      title: "Performance",
+      path: "/dashboard/performance",
+      icon: <TrendingUp />,
+    },
+    {
+      title: "Reports",
+      path: "/dashboard/reports",
+      icon: <Assessment />,
     },
     ...(role === "company_admin" || role === "hr_manager"
       ? [

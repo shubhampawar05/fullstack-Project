@@ -248,6 +248,31 @@ export default function EmployeeDetailDialog({
               </Grid>
             </Paper>
 
+            {/* Address Information */}
+            {employee.address && (
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Address
+                </Typography>
+                <Divider sx={{ my: 1 }} />
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12}>
+                    <Typography variant="body1">
+                      {[
+                        employee.address.street,
+                        employee.address.city,
+                        employee.address.state,
+                        employee.address.zipCode,
+                        employee.address.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            )}
+
             {/* Emergency Contact */}
             {employee.emergencyContact && (
               <Paper sx={{ p: 2 }}>

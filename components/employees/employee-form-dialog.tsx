@@ -21,6 +21,7 @@ import {
   CircularProgress,
   Grid,
   Typography,
+  Box,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,6 +52,18 @@ interface Employee {
   manager?: { id: string; name: string } | null;
   workLocation?: string;
   phone?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  emergencyContact?: {
+    name?: string;
+    relationship?: string;
+    phone?: string;
+  };
 }
 
 interface EmployeeFormDialogProps {
@@ -71,6 +84,47 @@ export default function EmployeeFormDialog({
   const [users, setUsers] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [managers, setManagers] = useState<any[]>([]);
+  const [createNewUser, setCreateNewUser] = useState(false);
+
+  // Extended schema for new fields
+  const extendedSchema = employeeFormSchema.extend({
+    // Make userId optional if creating new user
+    userId: z.string().optional(),
+    // New user fields
+    newUser: z
+      .object({
+        name: z.string().min(2, "Name is required"),
+        email: z.string().email("Invalid email"),
+        password: z.string().min(8, "Password must be at least 8 characters"),
+      })
+      .optional(),
+    // Address fields
+    address: z
+      .object({
+        street: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        zipCode: z.string().optional(),
+        country: z.string().optional(),
+      })
+      .optional(),
+    // Emergency Contact
+    emergencyContact: z
+      .object({
+        name: z.string().optional(),
+        relationship: z.string().optional(),
+        phone: z.string().optional(),
+      })
+      .optional(),
+  }).refine((data) => {
+    if (createNewUser) {
+      return !!data.newUser?.name && !!data.newUser?.email && !!data.newUser?.password;
+    }
+    return !!data.userId;
+  }, {
+    message: createNewUser ? "New user details are required" : "User selection is required",
+    path: createNewUser ? ["newUser"] : ["userId"],
+  });
 
   const {
     register,
@@ -78,11 +132,14 @@ export default function EmployeeFormDialog({
     control,
     formState: { errors },
     reset,
-  } = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeFormSchema),
+    watch,
+    setValue,
+  } = useForm<any>({
+    resolver: zodResolver(extendedSchema),
     defaultValues: {
       employmentType: "full-time",
       hireDate: new Date().toISOString().split("T")[0],
+      createNewUser: false,
     },
   });
 
@@ -111,7 +168,9 @@ export default function EmployeeFormDialog({
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setDepartments(data.departments.filter((d: any) => d.status === "active") || []);
+          setDepartments(
+            data.departments.filter((d: any) => d.status === "active") || []
+          );
         }
       }
     } catch (error) {
@@ -127,7 +186,9 @@ export default function EmployeeFormDialog({
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          setManagers(data.users.filter((u: any) => u.status === "active") || []);
+          setManagers(
+            data.users.filter((u: any) => u.status === "active") || []
+          );
         }
       }
     } catch (error) {
@@ -142,37 +203,41 @@ export default function EmployeeFormDialog({
 
     // Fetch data asynchronously
     const loadData = async () => {
-      await Promise.all([
-        fetchUsers(),
-        fetchDepartments(),
-        fetchManagers(),
-      ]);
+      await Promise.all([fetchUsers(), fetchDepartments(), fetchManagers()]);
     };
 
     loadData();
 
     // Reset form
     if (employee) {
+      setCreateNewUser(false);
       reset({
         userId: employee.userId,
         departmentId: employee.department?.id || "",
         position: employee.position || "",
-        hireDate: employee.hireDate ? new Date(employee.hireDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-        employmentType: employee.employmentType as any || "full-time",
+        hireDate: employee.hireDate
+          ? new Date(employee.hireDate).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
+        employmentType: (employee.employmentType as any) || "full-time",
         managerId: employee.manager?.id || "",
         workLocation: employee.workLocation || "",
         phone: employee.phone || "",
+        address: employee.address || {},
+        emergencyContact: employee.emergencyContact || {},
       });
     } else {
+      setCreateNewUser(false);
       reset({
         employmentType: "full-time",
         hireDate: new Date().toISOString().split("T")[0],
+        address: {},
+        emergencyContact: {},
       });
     }
     setError("");
   }, [open, employee, reset, fetchUsers, fetchDepartments, fetchManagers]);
 
-  const onSubmit = async (data: EmployeeFormData) => {
+  const onSubmit = async (data: any) => {
     setError("");
     setLoading(true);
 
@@ -189,13 +254,21 @@ export default function EmployeeFormDialog({
         salary: data.salary || undefined,
       };
 
+      // Handle new user creation flag
+      if (createNewUser && !employee) {
+        payload.newUser = data.newUser;
+        delete payload.userId;
+      } else {
+        delete payload.newUser;
+      }
+
       const response = await fetch(url, {
         method,
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(employee ? payload : { userId: data.userId, ...payload }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -228,33 +301,103 @@ export default function EmployeeFormDialog({
           )}
 
           <Grid container spacing={2}>
+            {/* User Selection / Creation Section */}
             {!employee && (
               <Grid item xs={12}>
-                <FormControl fullWidth error={!!errors.userId}>
-                  <InputLabel>Select User</InputLabel>
-                  <Controller
-                    name="userId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select {...field} label="Select User" disabled={loading}>
-                        {users
-                          .filter((u) => u.role === "employee" || u.role === "manager")
-                          .map((user) => (
-                            <MenuItem key={user.id} value={user.id}>
-                              {user.name} ({user.email}) - {user.role}
-                            </MenuItem>
-                          ))}
-                      </Select>
+                <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+                  <Button
+                    variant={!createNewUser ? "contained" : "outlined"}
+                    onClick={() => setCreateNewUser(false)}
+                  >
+                    Select Existing User
+                  </Button>
+                  <Button
+                    variant={createNewUser ? "contained" : "outlined"}
+                    onClick={() => setCreateNewUser(true)}
+                  >
+                    Create New User
+                  </Button>
+                </Box>
+
+                {!createNewUser ? (
+                  <FormControl fullWidth error={!!errors.userId}>
+                    <InputLabel>Select User</InputLabel>
+                    <Controller
+                      name="userId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          label="Select User"
+                          disabled={loading}
+                        >
+                          {users
+                            .filter(
+                              (u) =>
+                                u.role === "employee" || u.role === "manager"
+                            )
+                            .map((user) => (
+                              <MenuItem key={user.id} value={user.id}>
+                                {user.name} ({user.email}) - {user.role}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      )}
+                    />
+                    {errors.userId && (
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ mt: 0.5, ml: 1.75 }}
+                      >
+                        {errors.userId.message as string}
+                      </Typography>
                     )}
-                  />
-                  {errors.userId && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                      {errors.userId.message}
-                    </Typography>
-                  )}
-                </FormControl>
+                  </FormControl>
+                ) : (
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        {...register("newUser.name")}
+                        fullWidth
+                        label="Full Name"
+                        error={!!(errors as any).newUser?.name}
+                        helperText={(errors as any).newUser?.name?.message as string}
+                        disabled={loading}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        {...register("newUser.email")}
+                        fullWidth
+                        label="Email Address"
+                        error={!!(errors as any).newUser?.email}
+                        helperText={(errors as any).newUser?.email?.message as string}
+                        disabled={loading}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        {...register("newUser.password")}
+                        fullWidth
+                        type="password"
+                        label="Initial Password"
+                        error={!!(errors as any).newUser?.password}
+                        helperText={(errors as any).newUser?.password?.message as string}
+                        disabled={loading}
+                      />
+                    </Grid>
+                  </Grid>
+                )}
               </Grid>
             )}
+
+            {/* Divider */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Employment Details
+              </Typography>
+            </Grid>
 
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
@@ -282,7 +425,7 @@ export default function EmployeeFormDialog({
                 fullWidth
                 label="Position/Job Title"
                 error={!!errors.position}
-                helperText={errors.position?.message}
+                helperText={errors.position?.message as string}
                 disabled={loading}
               />
             </Grid>
@@ -295,7 +438,7 @@ export default function EmployeeFormDialog({
                 label="Hire Date"
                 InputLabelProps={{ shrink: true }}
                 error={!!errors.hireDate}
-                helperText={errors.hireDate?.message}
+                helperText={errors.hireDate?.message as string}
                 disabled={loading}
               />
             </Grid>
@@ -307,7 +450,11 @@ export default function EmployeeFormDialog({
                   name="employmentType"
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label="Employment Type" disabled={loading}>
+                    <Select
+                      {...field}
+                      label="Employment Type"
+                      disabled={loading}
+                    >
                       <MenuItem value="full-time">Full Time</MenuItem>
                       <MenuItem value="part-time">Part Time</MenuItem>
                       <MenuItem value="contract">Contract</MenuItem>
@@ -325,7 +472,7 @@ export default function EmployeeFormDialog({
                 type="number"
                 label="Salary (Optional)"
                 error={!!errors.salary}
-                helperText={errors.salary?.message}
+                helperText={errors.salary?.message as string}
                 disabled={loading}
               />
             </Grid>
@@ -367,6 +514,86 @@ export default function EmployeeFormDialog({
                 disabled={loading}
               />
             </Grid>
+
+            {/* Address Section */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Address
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                {...register("address.street")}
+                fullWidth
+                label="Street Address"
+                disabled={loading}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                {...register("address.city")}
+                fullWidth
+                label="City"
+                disabled={loading}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                {...register("address.state")}
+                fullWidth
+                label="State/Province"
+                disabled={loading}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                {...register("address.zipCode")}
+                fullWidth
+                label="Zip/Postal Code"
+                disabled={loading}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                {...register("address.country")}
+                fullWidth
+                label="Country"
+                disabled={loading}
+              />
+            </Grid>
+
+            {/* Emergency Contact Section */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Emergency Contact
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                {...register("emergencyContact.name")}
+                fullWidth
+                label="Contact Name"
+                disabled={loading}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                {...register("emergencyContact.relationship")}
+                fullWidth
+                label="Relationship"
+                disabled={loading}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                {...register("emergencyContact.phone")}
+                fullWidth
+                label="Contact Phone"
+                disabled={loading}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
@@ -380,11 +607,18 @@ export default function EmployeeFormDialog({
             sx={{
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               "&:hover": {
-                background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
+                background:
+                  "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
               },
             }}
           >
-            {loading ? <CircularProgress size={20} /> : employee ? "Update" : "Create"}
+            {loading ? (
+              <CircularProgress size={20} />
+            ) : employee ? (
+              "Update"
+            ) : (
+              "Create"
+            )}
           </Button>
         </DialogActions>
       </form>
