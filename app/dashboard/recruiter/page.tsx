@@ -1,6 +1,6 @@
 /**
  * Recruiter Dashboard - TalentHR
- * Dashboard for Recruiters
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -12,20 +12,21 @@ import {
   Box,
   Container,
   Typography,
-  Paper,
   Grid,
-  Card,
   CardContent,
   CircularProgress,
-  Button,
   Tabs,
   Tab,
+  IconButton,
+  Chip,
 } from "@mui/material";
-import { Work, People, Schedule, TrendingUp } from "@mui/icons-material";
+import { Work, People, Schedule, TrendingUp, MoreVert, Business } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import JobList from "@/components/recruitment/job-list";
 import CandidateList from "@/components/recruitment/candidate-list";
 import InterviewList from "@/components/recruitment/interview-list";
+import ClayCard from "@/components/ui/clay-card";
+import ClayButton from "@/components/ui/clay-button";
 
 export default function RecruiterDashboard() {
   const router = useRouter();
@@ -57,15 +58,7 @@ export default function RecruiterDashboard() {
             ...prev,
             activeJobs,
           }));
-        } else {
-          console.error("Failed to fetch jobs:", jobsData.message);
         }
-      } else {
-        console.error(
-          "Jobs API error:",
-          jobsResponse.status,
-          jobsResponse.statusText
-        );
       }
 
       // Fetch candidates
@@ -149,135 +142,96 @@ export default function RecruiterDashboard() {
 
   return (
     <DashboardLayout role="recruiter">
-      <Container maxWidth="lg">
+      <Container maxWidth="xl" sx={{ pb: 4 }}>
         {/* Header */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h4" component="h1" fontWeight={600} gutterBottom>
-            Recruiter Dashboard
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage job postings, candidates, and interviews
-          </Typography>
-        </Paper>
+        <ClayCard
+          sx={{
+            p: 4,
+            mb: 4,
+            background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+            color: "white",
+            border: "none",
+            boxShadow: "12px 12px 24px rgba(108, 92, 231, 0.25), -12px -12px 24px #ffffff",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: "rgba(255,255,255,0.2)",
+                borderRadius: 4,
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <Work sx={{ fontSize: 40, color: "white" }} />
+            </Box>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight={800} gutterBottom>
+                Recruiter Dashboard
+              </Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                Manage job postings, candidates, and interviews
+              </Typography>
+            </Box>
+          </Box>
+        </ClayCard>
 
         {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      color="text.secondary"
-                      gutterBottom
-                      variant="body2"
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[
+            { title: "Active Jobs", value: stats.activeJobs, sub: "Open Positions", icon: <Work />, color: "#6c5ce7" },
+            { title: "Total Candidates", value: stats.totalCandidates, sub: "In Pipeline", icon: <People />, color: "#fdcb6e" },
+            { title: "Interviews", value: stats.interviewsScheduled, sub: "Scheduled", icon: <Schedule />, color: "#00cec9" },
+            { title: "Offers Pending", value: stats.offersPending, sub: "Awaiting Response", icon: <TrendingUp />, color: "#55efc4" },
+          ].map((stat, idx) => (
+            <Grid item xs={12} sm={6} md={3} key={idx}>
+              <ClayCard sx={{ height: "100%" }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 3,
+                        bgcolor: `${stat.color}15`,
+                        color: stat.color,
+                        display: "flex",
+                      }}
                     >
-                      Active Jobs
-                    </Typography>
-                    <Typography variant="h4">{stats.activeJobs}</Typography>
+                      {stat.icon}
+                    </Box>
+                    <IconButton size="small">
+                      <MoreVert fontSize="small" />
+                    </IconButton>
                   </Box>
-                  <Work sx={{ fontSize: 40, color: "primary.main" }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      color="text.secondary"
-                      gutterBottom
-                      variant="body2"
-                    >
-                      Total Candidates
-                    </Typography>
-                    <Typography variant="h4">
-                      {stats.totalCandidates}
-                    </Typography>
-                  </Box>
-                  <People sx={{ fontSize: 40, color: "info.main" }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      color="text.secondary"
-                      gutterBottom
-                      variant="body2"
-                    >
-                      Interviews Scheduled
-                    </Typography>
-                    <Typography variant="h4">
-                      {stats.interviewsScheduled}
-                    </Typography>
-                  </Box>
-                  <Schedule sx={{ fontSize: 40, color: "warning.main" }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      color="text.secondary"
-                      gutterBottom
-                      variant="body2"
-                    >
-                      Offers Pending
-                    </Typography>
-                    <Typography variant="h4">{stats.offersPending}</Typography>
-                  </Box>
-                  <TrendingUp sx={{ fontSize: 40, color: "success.main" }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                  <Typography variant="h3" fontWeight={800} sx={{ mb: 0.5 }}>
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={600} gutterBottom>
+                    {stat.title}
+                  </Typography>
+                  <Chip
+                    label={stat.sub}
+                    size="small"
+                    sx={{
+                      bgcolor: `${stat.color}15`,
+                      color: stat.color,
+                      fontWeight: 700,
+                      height: 24
+                    }}
+                  />
+                </CardContent>
+              </ClayCard>
+            </Grid>
+          ))}
         </Grid>
 
         {/* Seed Data Button (Development Only) */}
-        <Paper
+        <ClayCard
           sx={{
             p: 2,
-            mb: 3,
-            bgcolor: "info.light",
-            color: "info.contrastText",
+            mb: 4,
+            bgcolor: "#e3f2fd",
+            border: "1px solid #90caf9",
           }}
         >
           <Box
@@ -287,13 +241,16 @@ export default function RecruiterDashboard() {
               alignItems: "center",
             }}
           >
-            <Typography variant="body2">
-              Need sample data? Click the button below to seed the database with
-              dummy recruitment data.
-            </Typography>
-            <Button
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ p: 1, bgcolor: "white", borderRadius: 2, color: "info.main" }}>
+                <TrendingUp />
+              </Box>
+              <Typography variant="body2" fontWeight={600} color="info.dark">
+                Need sample data? Seed the database with dummy recruitment data.
+              </Typography>
+            </Box>
+            <ClayButton
               variant="contained"
-              color="inherit"
               onClick={async () => {
                 try {
                   const response = await fetch("/api/seed/recruitment", {
@@ -314,30 +271,53 @@ export default function RecruiterDashboard() {
                   alert("Failed to seed data. Please try again.");
                 }
               }}
-              sx={{ ml: 2 }}
+              sx={{ bgcolor: "info.main", "&:hover": { bgcolor: "info.dark" } }}
             >
               Seed Dummy Data
-            </Button>
+            </ClayButton>
           </Box>
-        </Paper>
+        </ClayCard>
 
-        {/* Tabs for different sections */}
-        <Paper sx={{ mb: 3 }}>
-          <Tabs
-            value={activeTab}
-            onChange={(_, newValue) => setActiveTab(newValue)}
-            sx={{ borderBottom: 1, borderColor: "divider" }}
-          >
-            <Tab icon={<Work />} iconPosition="start" label="Job Postings" />
-            <Tab icon={<People />} iconPosition="start" label="Candidates" />
-            <Tab icon={<Schedule />} iconPosition="start" label="Interviews" />
-          </Tabs>
-        </Paper>
-
-        {/* Tab Content */}
-        {activeTab === 0 && <JobList onRefresh={fetchStats} />}
-        {activeTab === 1 && <CandidateList onRefresh={fetchStats} />}
-        {activeTab === 2 && <InterviewList onRefresh={fetchStats} />}
+        {/* Tabs & Content */}
+        <ClayCard sx={{ p: 0, overflow: "hidden" }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider", px: 2, pt: 2 }}>
+            <Tabs
+              value={activeTab}
+              onChange={(_, newValue) => setActiveTab(newValue)}
+              sx={{
+                "& .MuiTabs-indicator": {
+                  height: 3,
+                  borderRadius: "3px 3px 0 0",
+                  bgcolor: "primary.main",
+                },
+              }}
+            >
+              <Tab 
+                icon={<Work />} 
+                iconPosition="start" 
+                label="Job Postings" 
+                sx={{ fontWeight: 600, minHeight: 60 }} 
+              />
+              <Tab 
+                icon={<People />} 
+                iconPosition="start" 
+                label="Candidates" 
+                sx={{ fontWeight: 600, minHeight: 60 }} 
+              />
+              <Tab 
+                icon={<Schedule />} 
+                iconPosition="start" 
+                label="Interviews" 
+                sx={{ fontWeight: 600, minHeight: 60 }} 
+              />
+            </Tabs>
+          </Box>
+          <Box sx={{ p: 3 }}>
+            {activeTab === 0 && <JobList onRefresh={fetchStats} />}
+            {activeTab === 1 && <CandidateList onRefresh={fetchStats} />}
+            {activeTab === 2 && <InterviewList onRefresh={fetchStats} />}
+          </Box>
+        </ClayCard>
       </Container>
     </DashboardLayout>
   );

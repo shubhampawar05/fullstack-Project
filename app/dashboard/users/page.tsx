@@ -1,6 +1,6 @@
 /**
  * User Management Page - TalentHR
- * List and manage all users in the company
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -11,12 +11,13 @@ import {
   Box,
   Container,
   Typography,
-  Paper,
   CircularProgress,
 } from "@mui/material";
+import { People } from "@mui/icons-material";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import UserList from "@/components/users/user-list";
 import { useAuth } from "@/contexts/auth-context";
+import ClayCard from "@/components/ui/clay-card";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -69,19 +70,44 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout role={(user?.role as any) || "company_admin"}>
-      <Container maxWidth="lg">
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h4" component="h1" fontWeight={600} gutterBottom>
-            User Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage all users in your company. View, edit, and activate/deactivate user accounts.
-          </Typography>
-        </Paper>
+      <Container maxWidth="xl" sx={{ pb: 4 }}>
+        {/* Header */}
+        <ClayCard
+          sx={{
+            p: 4,
+            mb: 4,
+            background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+            color: "white",
+            border: "none",
+            boxShadow: "12px 12px 24px rgba(108, 92, 231, 0.25), -12px -12px 24px #ffffff",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: "rgba(255,255,255,0.2)",
+                borderRadius: 4,
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <People sx={{ fontSize: 40, color: "white" }} />
+            </Box>
+            <Box>
+              <Typography variant="h3" component="h1" fontWeight={800} gutterBottom>
+                User Management
+              </Typography>
+              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                Manage all users in your company. View, edit, and activate/deactivate accounts.
+              </Typography>
+            </Box>
+          </Box>
+        </ClayCard>
 
-        <UserList key={refreshKey} onRefresh={handleRefresh} />
+        <ClayCard sx={{ p: 3 }}>
+          <UserList key={refreshKey} onRefresh={handleRefresh} />
+        </ClayCard>
       </Container>
     </DashboardLayout>
   );
 }
-

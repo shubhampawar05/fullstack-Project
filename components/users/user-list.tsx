@@ -1,6 +1,6 @@
 /**
  * User List Component - TalentHR
- * Displays list of all users with management actions
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -8,7 +8,6 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Paper,
   Typography,
   Table,
   TableBody,
@@ -18,7 +17,6 @@ import {
   TableRow,
   Chip,
   IconButton,
-  Button,
   Tooltip,
   Alert,
   CircularProgress,
@@ -40,9 +38,9 @@ import {
   CheckCircle,
   Person,
   Search,
-  FilterList,
 } from "@mui/icons-material";
 import UserEditDialog from "./user-edit-dialog";
+import ClayButton from "@/components/ui/clay-button";
 
 interface User {
   id: string;
@@ -247,16 +245,16 @@ export default function UserList({ onRefresh }: UserListProps) {
         </FormControl>
       </Box>
 
-      <TableContainer component={Paper}>
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Last Login</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Role</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Last Login</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -272,7 +270,7 @@ export default function UserList({ onRefresh }: UserListProps) {
               </TableRow>
             ) : (
               users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.id} hover>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Person fontSize="small" color="action" />
@@ -285,6 +283,7 @@ export default function UserList({ onRefresh }: UserListProps) {
                       label={getRoleDisplay(user.role)}
                       size="small"
                       variant="outlined"
+                      sx={{ borderRadius: 2 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -292,6 +291,7 @@ export default function UserList({ onRefresh }: UserListProps) {
                       label={user.status}
                       color={getStatusColor(user.status) as any}
                       size="small"
+                      sx={{ borderRadius: 2, fontWeight: 600 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -305,6 +305,7 @@ export default function UserList({ onRefresh }: UserListProps) {
                         <IconButton
                           size="small"
                           onClick={() => setEditDialog({ open: true, user })}
+                          sx={{ bgcolor: "#f0f4f8", "&:hover": { bgcolor: "#e6eaf0" } }}
                         >
                           <Edit fontSize="small" />
                         </IconButton>
@@ -321,6 +322,7 @@ export default function UserList({ onRefresh }: UserListProps) {
                                 userName: user.name,
                               })
                             }
+                            sx={{ bgcolor: "#fff0f0", "&:hover": { bgcolor: "#ffe0e0" } }}
                           >
                             <Block fontSize="small" />
                           </IconButton>
@@ -337,6 +339,7 @@ export default function UserList({ onRefresh }: UserListProps) {
                                 user: { ...user, status: "active" },
                               })
                             }
+                            sx={{ bgcolor: "#f0fff4", "&:hover": { bgcolor: "#dcfce7" } }}
                           >
                             <CheckCircle fontSize="small" />
                           </IconButton>
@@ -357,25 +360,33 @@ export default function UserList({ onRefresh }: UserListProps) {
         onClose={() =>
           setDeactivateDialog({ open: false, userId: null, userName: "" })
         }
+        PaperProps={{
+            sx: { borderRadius: 4, p: 1 }
+        }}
       >
-        <DialogTitle>Deactivate User</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Deactivate User</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to deactivate <strong>{deactivateDialog.userName}</strong>?
             They will not be able to login until reactivated.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <ClayButton
+            variant="outlined"
             onClick={() =>
               setDeactivateDialog({ open: false, userId: null, userName: "" })
             }
           >
             Cancel
-          </Button>
-          <Button onClick={handleDeactivate} color="error" variant="contained">
+          </ClayButton>
+          <ClayButton 
+            onClick={handleDeactivate} 
+            variant="contained"
+            sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }}
+          >
             Deactivate
-          </Button>
+          </ClayButton>
         </DialogActions>
       </Dialog>
 
@@ -399,4 +410,3 @@ export default function UserList({ onRefresh }: UserListProps) {
     </>
   );
 }
-

@@ -1,6 +1,6 @@
 /**
  * Invitation List Component - TalentHR
- * Displays list of all invitations with status and actions
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -9,7 +9,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
-  Paper,
   Typography,
   Table,
   TableBody,
@@ -19,7 +18,6 @@ import {
   TableRow,
   Chip,
   IconButton,
-  Button,
   Tooltip,
   Alert,
   CircularProgress,
@@ -27,8 +25,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  MenuItem,
   Snackbar,
 } from "@mui/material";
 import {
@@ -39,6 +35,7 @@ import {
   Schedule,
   Block,
 } from "@mui/icons-material";
+import ClayButton from "@/components/ui/clay-button";
 
 interface Invitation {
   id: string;
@@ -208,16 +205,16 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
         </Alert>
       )}
 
-      <TableContainer component={Paper}>
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Invited By</TableCell>
-              <TableCell>Expires At</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Role</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Invited By</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Expires At</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -231,7 +228,7 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
               </TableRow>
             ) : (
               invitations.map((invitation) => (
-                <TableRow key={invitation.id}>
+                <TableRow key={invitation.id} hover>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Email fontSize="small" color="action" />
@@ -243,6 +240,7 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
                       label={invitation.role.replace("_", " ")}
                       size="small"
                       variant="outlined"
+                      sx={{ borderRadius: 2 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -251,6 +249,7 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
                       label={invitation.status}
                       color={getStatusColor(invitation.status) as "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"}
                       size="small"
+                      sx={{ borderRadius: 2, fontWeight: 600 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -267,6 +266,7 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
                             <IconButton
                               size="small"
                               onClick={() => handleCopyLink(invitation)}
+                              sx={{ bgcolor: "#f0f4f8", "&:hover": { bgcolor: "#e6eaf0" } }}
                             >
                               <ContentCopy fontSize="small" />
                             </IconButton>
@@ -278,6 +278,7 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
                               onClick={() =>
                                 setCancelDialog({ open: true, invitationId: invitation.id })
                               }
+                              sx={{ bgcolor: "#fff0f0", "&:hover": { bgcolor: "#ffe0e0" } }}
                             >
                               <Cancel fontSize="small" />
                             </IconButton>
@@ -297,22 +298,30 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
       <Dialog
         open={cancelDialog.open}
         onClose={() => setCancelDialog({ open: false, invitationId: null })}
+        PaperProps={{
+            sx: { borderRadius: 4, p: 1 }
+        }}
       >
-        <DialogTitle>Cancel Invitation</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Cancel Invitation</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to cancel this invitation? This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <ClayButton
+            variant="outlined"
             onClick={() => setCancelDialog({ open: false, invitationId: null })}
           >
             No, Keep It
-          </Button>
-          <Button onClick={handleCancel} color="error" variant="contained">
+          </ClayButton>
+          <ClayButton 
+            onClick={handleCancel} 
+            variant="contained"
+            sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }}
+          >
             Yes, Cancel Invitation
-          </Button>
+          </ClayButton>
         </DialogActions>
       </Dialog>
 
@@ -326,4 +335,3 @@ export default function InvitationList({ onRefresh }: InvitationListProps) {
     </>
   );
 }
-

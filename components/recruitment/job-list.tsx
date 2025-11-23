@@ -1,6 +1,6 @@
 /**
  * Job List Component - TalentHR
- * Displays list of all job postings with management actions
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -8,7 +8,6 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Paper,
   Typography,
   Table,
   TableBody,
@@ -18,7 +17,6 @@ import {
   TableRow,
   Chip,
   IconButton,
-  Button,
   Tooltip,
   Alert,
   CircularProgress,
@@ -32,14 +30,13 @@ import {
 } from "@mui/material";
 import {
   Edit,
-  Visibility,
   Delete,
   Work,
   Search,
-  FilterList,
   Add,
 } from "@mui/icons-material";
 import JobFormDialog from "./job-form-dialog";
+import ClayButton from "@/components/ui/clay-button";
 
 interface Job {
   id: string;
@@ -159,163 +156,162 @@ export default function JobList({ onRefresh }: JobListProps) {
 
   return (
     <>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Job Postings
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setFormDialog({ open: true, job: null })}
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-              },
-            }}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+        <Typography variant="h5" fontWeight={700}>
+          Job Postings
+        </Typography>
+        <ClayButton
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setFormDialog({ open: true, job: null })}
+          sx={{
+            background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+          }}
+        >
+          Post New Job
+        </ClayButton>
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Filters */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <TextField
+          placeholder="Search jobs..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ flexGrow: 1, minWidth: 200 }}
+        />
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={statusFilter}
+            label="Status"
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            Post New Job
-          </Button>
+            <MenuItem value="all">All Status</MenuItem>
+            <MenuItem value="draft">Draft</MenuItem>
+            <MenuItem value="published">Published</MenuItem>
+            <MenuItem value="closed">Closed</MenuItem>
+            <MenuItem value="cancelled">Cancelled</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Type</InputLabel>
+          <Select
+            value={employmentTypeFilter}
+            label="Type"
+            onChange={(e) => setEmploymentTypeFilter(e.target.value)}
+          >
+            <MenuItem value="all">All Types</MenuItem>
+            <MenuItem value="full-time">Full-time</MenuItem>
+            <MenuItem value="part-time">Part-time</MenuItem>
+            <MenuItem value="contract">Contract</MenuItem>
+            <MenuItem value="intern">Intern</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      {jobs.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Work sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">
+            No job postings found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Create your first job posting to get started
+          </Typography>
         </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Filters */}
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
-          <TextField
-            placeholder="Search jobs..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ flexGrow: 1, minWidth: 200 }}
-          />
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={statusFilter}
-              label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="draft">Draft</MenuItem>
-              <MenuItem value="published">Published</MenuItem>
-              <MenuItem value="closed">Closed</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Type</InputLabel>
-            <Select
-              value={employmentTypeFilter}
-              label="Type"
-              onChange={(e) => setEmploymentTypeFilter(e.target.value)}
-            >
-              <MenuItem value="all">All Types</MenuItem>
-              <MenuItem value="full-time">Full-time</MenuItem>
-              <MenuItem value="part-time">Part-time</MenuItem>
-              <MenuItem value="contract">Contract</MenuItem>
-              <MenuItem value="intern">Intern</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-
-        {jobs.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Work sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No job postings found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Create your first job posting to get started
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Department</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Applications</TableCell>
-                  <TableCell>Views</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+      ) : (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Title</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Department</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Type</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Location</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Applications</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Views</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700, color: "text.secondary" }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {jobs.map((job) => (
+                <TableRow key={job.id} hover>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight={600}>
+                      {job.title}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {job.department ? job.department.name : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={job.employmentType}
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderRadius: 2 }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {job.remote ? (
+                      <Chip label="Remote" size="small" color="info" sx={{ borderRadius: 2 }} />
+                    ) : (
+                      job.location || "-"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={job.status}
+                      size="small"
+                      color={getStatusColor(job.status) as any}
+                      sx={{ borderRadius: 2, fontWeight: 600 }}
+                    />
+                  </TableCell>
+                  <TableCell>{job.applicationsCount}</TableCell>
+                  <TableCell>{job.views}</TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="Edit">
+                      <IconButton
+                        size="small"
+                        onClick={() => setFormDialog({ open: true, job })}
+                        sx={{ bgcolor: "#f0f4f8", "&:hover": { bgcolor: "#e6eaf0" }, mr: 1 }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDelete(job.id)}
+                        sx={{ bgcolor: "#fff0f0", "&:hover": { bgcolor: "#ffe0e0" } }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {jobs.map((job) => (
-                  <TableRow key={job.id} hover>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {job.title}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      {job.department ? job.department.name : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={job.employmentType}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {job.remote ? (
-                        <Chip label="Remote" size="small" color="info" />
-                      ) : (
-                        job.location || "-"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={job.status}
-                        size="small"
-                        color={getStatusColor(job.status) as any}
-                      />
-                    </TableCell>
-                    <TableCell>{job.applicationsCount}</TableCell>
-                    <TableCell>{job.views}</TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Edit">
-                        <IconButton
-                          size="small"
-                          onClick={() => setFormDialog({ open: true, job })}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDelete(job.id)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Paper>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <JobFormDialog
         open={formDialog.open}
@@ -337,4 +333,3 @@ export default function JobList({ onRefresh }: JobListProps) {
     </>
   );
 }
-

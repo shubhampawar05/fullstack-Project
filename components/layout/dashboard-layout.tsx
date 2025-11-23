@@ -1,6 +1,6 @@
 /**
  * Dashboard Layout Component - TalentHR
- * Shared layout for all dashboard pages with sidebar and header
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -29,6 +29,7 @@ import {
   useMediaQuery,
   Badge,
   CircularProgress,
+  Card,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -41,7 +42,11 @@ import {
   AccountCircle,
   Notifications,
   ChevronLeft,
+  AccessTime,
+  School,
+  AttachMoney,
 } from "@mui/icons-material";
+import ClayCard from "@/components/ui/clay-card";
 
 const DRAWER_WIDTH = 280;
 
@@ -108,6 +113,21 @@ function DashboardLayoutContent({
           },
         ]
       : []),
+    {
+      title: "Attendance",
+      path: "/dashboard/attendance",
+      icon: <AccessTime />,
+    },
+    {
+      title: "Learning & Development",
+      path: "/dashboard/learning",
+      icon: <School />,
+    },
+    {
+      title: "Payroll",
+      path: "/dashboard/payroll",
+      icon: <AttachMoney />,
+    },
     ...(role === "company_admin"
       ? [
           {
@@ -142,114 +162,153 @@ function DashboardLayoutContent({
   };
 
   const drawer = (
-    <Box>
-      <Toolbar
-        sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Business />
-          <Typography variant="h6" noWrap component="div" fontWeight={600}>
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", p: 2 }}>
+      {/* Logo Area */}
+      <Box sx={{ 
+        p: 2, 
+        mb: 2, 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 2,
+        borderRadius: 4,
+        background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+        boxShadow: "8px 8px 16px rgba(108, 92, 231, 0.2), -8px -8px 16px #ffffff",
+        color: "white"
+      }}>
+        <Box
+          sx={{
+            bgcolor: "rgba(255,255,255,0.2)",
+            p: 1,
+            borderRadius: 3,
+            display: "flex",
+          }}
+        >
+          <Business sx={{ fontSize: 24 }} />
+        </Box>
+        <Box>
+          <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.2 }}>
             TalentHR
           </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 500 }}>
+            HR Management
+          </Typography>
         </Box>
-        {isMobile && (
-          <IconButton
-            onClick={handleDrawerToggle}
-            sx={{ color: "white" }}
-          >
-            <ChevronLeft />
-          </IconButton>
-        )}
-      </Toolbar>
-      <Divider />
-      <List sx={{ pt: 2 }}>
-        {filteredMenuItems.map((item) => {
-          // Check if path matches (handle query params)
-          const itemPathWithoutQuery = item.path.split("?")[0];
-          const currentPath = pathname;
-          
-          // Check if path matches
-          const pathMatches = currentPath === itemPathWithoutQuery || 
-                             currentPath.startsWith(itemPathWithoutQuery + "/");
-          
-          // Check if query params match (if item has query params)
-          let queryMatches = true;
-          if (item.path.includes("?")) {
-            const itemQueryString = item.path.split("?")[1];
-            const itemQueryParams = new URLSearchParams(itemQueryString);
-            const currentQueryParams = searchParams;
+      </Box>
+
+      {/* Navigation */}
+      <Box sx={{ flexGrow: 1, overflowY: "auto", px: 1 }}>
+        <List sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          {filteredMenuItems.map((item) => {
+            const itemPathWithoutQuery = item.path.split("?")[0];
+            const currentPath = pathname;
+            const pathMatches = currentPath === itemPathWithoutQuery || currentPath.startsWith(itemPathWithoutQuery + "/");
+            let queryMatches = true;
+            if (item.path.includes("?")) {
+              const itemQueryString = item.path.split("?")[1];
+              const itemQueryParams = new URLSearchParams(itemQueryString);
+              const currentQueryParams = searchParams;
+              queryMatches = Array.from(itemQueryParams.entries()).every(([key, value]) => {
+                return currentQueryParams.get(key) === value;
+              });
+            }
+            const isActive = pathMatches && queryMatches;
             
-            // Check if all query params from item match current query params
-            queryMatches = Array.from(itemQueryParams.entries()).every(([key, value]) => {
-              return currentQueryParams.get(key) === value;
-            });
-          }
-          
-          const isActive = pathMatches && queryMatches;
-          
-          return (
-            <ListItem key={item.title} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={isActive}
-                onClick={() => {
-                  if (isMobile) setMobileOpen(false);
-                }}
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: "primary.main",
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
-                    },
-                    "& .MuiListItemIcon-root": {
-                      color: "white",
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon
+            return (
+              <ListItem key={item.title} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href={item.path}
+                  selected={isActive}
+                  onClick={() => {
+                    if (isMobile) setMobileOpen(false);
+                  }}
                   sx={{
-                    color: isActive ? "white" : "text.secondary",
+                    borderRadius: 4,
+                    py: 1.5,
+                    px: 2,
+                    transition: "all 0.2s ease-in-out",
+                    background: isActive ? "#f0f4f8" : "transparent",
+                    boxShadow: isActive 
+                      ? "inset 4px 4px 8px #d1d9e6, inset -4px -4px 8px #ffffff" 
+                      : "none",
+                    "&:hover": {
+                      background: !isActive ? "#f8faff" : undefined,
+                      transform: !isActive ? "translateX(4px)" : "none",
+                    },
                   }}
                 >
-                  {item.badge ? (
-                    <Badge badgeContent={item.badge} color="error">
-                      {item.icon}
-                    </Badge>
-                  ) : (
-                    item.icon
-                  )}
-                </ListItemIcon>
-                <ListItemText primary={item.title} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 40,
+                      color: isActive ? "primary.main" : "text.secondary",
+                    }}
+                  >
+                    {item.badge ? (
+                      <Badge badgeContent={item.badge} color="error">
+                        {item.icon}
+                      </Badge>
+                    ) : (
+                      item.icon
+                    )}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.title} 
+                    primaryTypographyProps={{ 
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? "primary.main" : "text.primary",
+                    }} 
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </Box>
+
+      {/* Pro Tip Card */}
+      <Box sx={{ mt: 2, px: 1 }}>
+        <ClayCard
+          sx={{
+            background: "linear-gradient(135deg, #fdcb6e 0%, #ffeaa7 100%)",
+            color: "#d35400",
+            p: 2,
+            overflow: "hidden",
+            border: "none"
+          }}
+        >
+          <Box sx={{ position: "relative", zIndex: 1 }}>
+            <Typography variant="subtitle2" fontWeight={800}>Pro Tip</Typography>
+            <Typography variant="caption" sx={{ display: "block", mt: 0.5, fontWeight: 600 }}>
+              Complete your profile to unlock all features.
+            </Typography>
+          </Box>
+          <Notifications sx={{ position: "absolute", right: -10, bottom: -10, fontSize: 60, opacity: 0.2, transform: "rotate(-15deg)" }} />
+        </ClayCard>
+      </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", bgcolor: "#f0f4f8", minHeight: "100vh" }}>
+      {/* Top Bar - Floating Pill */}
       <AppBar
         position="fixed"
+        elevation={0}
         sx={{
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px - 32px)` },
           ml: { md: `${DRAWER_WIDTH}px` },
-          background: "white",
+          mr: { md: 3 },
+          mt: { xs: 2, md: 3 },
+          right: 0,
+          borderRadius: 6,
+          background: "rgba(255, 255, 255, 0.8)",
+          backdropFilter: "blur(20px)",
           color: "text.primary",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          boxShadow: "12px 12px 24px #d1d9e6, -12px -12px 24px #ffffff",
+          border: "1px solid rgba(255,255,255,0.6)",
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: "70px !important" }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -260,23 +319,31 @@ function DashboardLayoutContent({
             <MenuIcon />
           </IconButton>
 
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 800, letterSpacing: "-0.5px" }}>
             {menuItems.find((item) => pathname === item.path)?.title || "Dashboard"}
           </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton color="inherit">
+            <IconButton 
+              sx={{ 
+                bgcolor: "#f0f4f8", 
+                boxShadow: "4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff",
+                "&:hover": { bgcolor: "#e6eaf0" }
+              }}
+            >
               <Badge badgeContent={0} color="error">
-                <Notifications />
+                <Notifications color="action" />
               </Badge>
             </IconButton>
 
-            <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+            <IconButton onClick={handleMenuOpen} sx={{ p: 0, ml: 1 }}>
               <Avatar
                 sx={{
                   bgcolor: "primary.main",
-                  width: 40,
-                  height: 40,
+                  width: 44,
+                  height: 44,
+                  boxShadow: "4px 4px 8px rgba(108, 92, 231, 0.3), -4px -4px 8px #ffffff",
+                  border: "2px solid white"
                 }}
               >
                 {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
@@ -289,25 +356,36 @@ function DashboardLayoutContent({
               onClose={handleMenuClose}
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  mt: 1.5,
+                  borderRadius: 4,
+                  boxShadow: "12px 12px 24px #d1d9e6, -12px -12px 24px #ffffff",
+                  border: "1px solid rgba(255,255,255,0.6)",
+                  overflow: "hidden"
+                }
+              }}
             >
-              <MenuItem onClick={() => router.push("/dashboard/profile")}>
+              <MenuItem onClick={() => router.push("/dashboard/profile")} sx={{ py: 1.5, px: 2.5 }}>
                 <ListItemIcon>
                   <AccountCircle fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Profile</ListItemText>
               </MenuItem>
               <Divider />
-              <MenuItem onClick={handleLogout}>
+              <MenuItem onClick={handleLogout} sx={{ py: 1.5, px: 2.5 }}>
                 <ListItemIcon>
-                  <Logout fontSize="small" />
+                  <Logout fontSize="small" color="error" />
                 </ListItemIcon>
-                <ListItemText>Logout</ListItemText>
+                <ListItemText sx={{ color: "error.main" }}>Logout</ListItemText>
               </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
       </AppBar>
 
+      {/* Sidebar Container */}
       <Box
         component="nav"
         sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
@@ -316,14 +394,14 @@ function DashboardLayoutContent({
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
+          ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: "block", md: "none" },
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: DRAWER_WIDTH,
+              bgcolor: "#f0f4f8",
+              borderRight: "none"
             },
           }}
         >
@@ -336,6 +414,9 @@ function DashboardLayoutContent({
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: DRAWER_WIDTH,
+              bgcolor: "transparent", // Transparent to show body bg
+              borderRight: "none",
+              p: 2
             },
           }}
           open
@@ -344,6 +425,7 @@ function DashboardLayoutContent({
         </Drawer>
       </Box>
 
+      {/* Main Content Area */}
       <Box
         component="main"
         sx={{
@@ -351,10 +433,9 @@ function DashboardLayoutContent({
           p: 3,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           minHeight: "100vh",
-          backgroundColor: "background.default",
+          mt: { xs: 10, md: 12 }, // More space for floating header
         }}
       >
-        <Toolbar /> {/* Spacer for AppBar */}
         {children}
       </Box>
     </Box>
@@ -384,4 +465,3 @@ export default function DashboardLayout({
     </Suspense>
   );
 }
-

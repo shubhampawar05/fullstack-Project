@@ -1,6 +1,6 @@
 /**
  * Candidate List Component - TalentHR
- * Displays list of all candidates with management actions
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -8,7 +8,6 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Paper,
   Typography,
   Table,
   TableBody,
@@ -18,7 +17,6 @@ import {
   TableRow,
   Chip,
   IconButton,
-  Button,
   Tooltip,
   Alert,
   CircularProgress,
@@ -39,6 +37,7 @@ import {
 } from "@mui/icons-material";
 import CandidateFormDialog from "./candidate-form-dialog";
 import CandidateDetailDialog from "./candidate-detail-dialog";
+import ClayButton from "@/components/ui/clay-button";
 
 interface Candidate {
   id: string;
@@ -166,174 +165,173 @@ export default function CandidateList({
 
   return (
     <>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Candidates
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setFormDialog({ open: true, candidate: null })}
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-              },
-            }}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+        <Typography variant="h5" fontWeight={700}>
+          Candidates
+        </Typography>
+        <ClayButton
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setFormDialog({ open: true, candidate: null })}
+          sx={{
+            background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+          }}
+        >
+          Add Candidate
+        </ClayButton>
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Filters */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <TextField
+          placeholder="Search candidates..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ flexGrow: 1, minWidth: 200 }}
+        />
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={statusFilter}
+            label="Status"
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            Add Candidate
-          </Button>
+            <MenuItem value="all">All Status</MenuItem>
+            <MenuItem value="applied">Applied</MenuItem>
+            <MenuItem value="screening">Screening</MenuItem>
+            <MenuItem value="interview">Interview</MenuItem>
+            <MenuItem value="offer">Offer</MenuItem>
+            <MenuItem value="hired">Hired</MenuItem>
+            <MenuItem value="rejected">Rejected</MenuItem>
+            <MenuItem value="withdrawn">Withdrawn</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Stage</InputLabel>
+          <Select
+            value={stageFilter}
+            label="Stage"
+            onChange={(e) => setStageFilter(e.target.value)}
+          >
+            <MenuItem value="all">All Stages</MenuItem>
+            <MenuItem value="application">Application</MenuItem>
+            <MenuItem value="phone-screen">Phone Screen</MenuItem>
+            <MenuItem value="technical">Technical</MenuItem>
+            <MenuItem value="final">Final</MenuItem>
+            <MenuItem value="offer">Offer</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      {candidates.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <People sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">
+            No candidates found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Add candidates to start tracking applications
+          </Typography>
         </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Filters */}
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
-          <TextField
-            placeholder="Search candidates..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ flexGrow: 1, minWidth: 200 }}
-          />
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={statusFilter}
-              label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="applied">Applied</MenuItem>
-              <MenuItem value="screening">Screening</MenuItem>
-              <MenuItem value="interview">Interview</MenuItem>
-              <MenuItem value="offer">Offer</MenuItem>
-              <MenuItem value="hired">Hired</MenuItem>
-              <MenuItem value="rejected">Rejected</MenuItem>
-              <MenuItem value="withdrawn">Withdrawn</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Stage</InputLabel>
-            <Select
-              value={stageFilter}
-              label="Stage"
-              onChange={(e) => setStageFilter(e.target.value)}
-            >
-              <MenuItem value="all">All Stages</MenuItem>
-              <MenuItem value="application">Application</MenuItem>
-              <MenuItem value="phone-screen">Phone Screen</MenuItem>
-              <MenuItem value="technical">Technical</MenuItem>
-              <MenuItem value="final">Final</MenuItem>
-              <MenuItem value="offer">Offer</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-
-        {candidates.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <People sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No candidates found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Add candidates to start tracking applications
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Job</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Stage</TableCell>
-                  <TableCell>Experience</TableCell>
-                  <TableCell>Rating</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {candidates.map((candidate) => (
-                  <TableRow key={candidate.id} hover>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {candidate.firstName} {candidate.lastName}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{candidate.email}</TableCell>
-                    <TableCell>
-                      {candidate.jobPosting ? candidate.jobPosting.title : "-"}
-                    </TableCell>
-                    <TableCell>
+      ) : (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Job</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Stage</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Experience</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Rating</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700, color: "text.secondary" }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {candidates.map((candidate) => (
+                <TableRow key={candidate.id} hover>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight={600}>
+                      {candidate.firstName} {candidate.lastName}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{candidate.email}</TableCell>
+                  <TableCell>
+                    {candidate.jobPosting ? candidate.jobPosting.title : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={candidate.status}
+                      size="small"
+                      color={getStatusColor(candidate.status) as any}
+                      sx={{ borderRadius: 2, fontWeight: 600 }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={candidate.stage} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
+                  </TableCell>
+                  <TableCell>
+                    {candidate.experience
+                      ? `${candidate.experience} years`
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {candidate.rating ? (
                       <Chip
-                        label={candidate.status}
+                        label={`${candidate.rating}/5`}
                         size="small"
-                        color={getStatusColor(candidate.status) as any}
+                        color="primary"
+                        sx={{ borderRadius: 2 }}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={candidate.stage} size="small" variant="outlined" />
-                    </TableCell>
-                    <TableCell>
-                      {candidate.experience
-                        ? `${candidate.experience} years`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {candidate.rating ? (
-                        <Chip
-                          label={`${candidate.rating}/5`}
-                          size="small"
-                          color="primary"
-                        />
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setDetailDialog({ open: true, candidateId: candidate.id })
-                          }
-                        >
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit">
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setFormDialog({ open: true, candidate })
-                          }
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Paper>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="View Details">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setDetailDialog({ open: true, candidateId: candidate.id })
+                        }
+                        sx={{ bgcolor: "#f0f4f8", "&:hover": { bgcolor: "#e6eaf0" }, mr: 1 }}
+                      >
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Edit">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setFormDialog({ open: true, candidate })
+                        }
+                        sx={{ bgcolor: "#f0f4f8", "&:hover": { bgcolor: "#e6eaf0" } }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <CandidateFormDialog
         open={formDialog.open}
@@ -366,4 +364,3 @@ export default function CandidateList({
     </>
   );
 }
-

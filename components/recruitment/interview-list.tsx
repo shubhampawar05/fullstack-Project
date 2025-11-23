@@ -1,6 +1,6 @@
 /**
  * Interview List Component - TalentHR
- * Displays list of all interviews with management actions
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -8,7 +8,6 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Paper,
   Typography,
   Table,
   TableBody,
@@ -36,6 +35,7 @@ import {
   Add,
 } from "@mui/icons-material";
 import InterviewFormDialog from "./interview-form-dialog";
+import ClayButton from "@/components/ui/clay-button";
 
 interface Interview {
   id: string;
@@ -137,137 +137,134 @@ export default function InterviewList({
 
   return (
     <>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Interviews
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setFormDialog({ open: true, interview: null })}
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-              },
-            }}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+        <Typography variant="h5" fontWeight={700}>
+          Interviews
+        </Typography>
+        <ClayButton
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setFormDialog({ open: true, interview: null })}
+          sx={{
+            background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
+          }}
+        >
+          Schedule Interview
+        </ClayButton>
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Filters */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={statusFilter}
+            label="Status"
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            Schedule Interview
-          </Button>
+            <MenuItem value="all">All Status</MenuItem>
+            <MenuItem value="scheduled">Scheduled</MenuItem>
+            <MenuItem value="completed">Completed</MenuItem>
+            <MenuItem value="cancelled">Cancelled</MenuItem>
+            <MenuItem value="rescheduled">Rescheduled</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Type</InputLabel>
+          <Select
+            value={typeFilter}
+            label="Type"
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
+            <MenuItem value="all">All Types</MenuItem>
+            <MenuItem value="phone-screen">Phone Screen</MenuItem>
+            <MenuItem value="technical">Technical</MenuItem>
+            <MenuItem value="behavioral">Behavioral</MenuItem>
+            <MenuItem value="final">Final</MenuItem>
+            <MenuItem value="panel">Panel</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      {interviews.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Schedule sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">
+            No interviews scheduled
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Schedule an interview to get started
+          </Typography>
         </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Filters */}
-        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={statusFilter}
-              label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="scheduled">Scheduled</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
-              <MenuItem value="rescheduled">Rescheduled</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Type</InputLabel>
-            <Select
-              value={typeFilter}
-              label="Type"
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
-              <MenuItem value="all">All Types</MenuItem>
-              <MenuItem value="phone-screen">Phone Screen</MenuItem>
-              <MenuItem value="technical">Technical</MenuItem>
-              <MenuItem value="behavioral">Behavioral</MenuItem>
-              <MenuItem value="final">Final</MenuItem>
-              <MenuItem value="panel">Panel</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-
-        {interviews.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Schedule sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No interviews scheduled
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Schedule an interview to get started
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Candidate</TableCell>
-                  <TableCell>Job</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Scheduled At</TableCell>
-                  <TableCell>Duration</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+      ) : (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Candidate</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Job</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Type</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Scheduled At</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Duration</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Location</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "text.secondary" }}>Status</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700, color: "text.secondary" }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {interviews.map((interview) => (
+                <TableRow key={interview.id} hover>
+                  <TableCell>
+                    {interview.candidate
+                      ? `${interview.candidate.firstName} ${interview.candidate.lastName}`
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {interview.jobPosting ? interview.jobPosting.title : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={interview.type} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(interview.scheduledAt).toLocaleString()}
+                  </TableCell>
+                  <TableCell>{interview.duration} min</TableCell>
+                  <TableCell>
+                    {interview.isRemote ? (
+                      <Chip label="Remote" size="small" color="info" sx={{ borderRadius: 2 }} />
+                    ) : (
+                      interview.location || "-"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={interview.status}
+                      size="small"
+                      color={getStatusColor(interview.status) as any}
+                      sx={{ borderRadius: 2, fontWeight: 600 }}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      size="small"
+                      onClick={() => setFormDialog({ open: true, interview })}
+                      sx={{ bgcolor: "#f0f4f8", "&:hover": { bgcolor: "#e6eaf0" } }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {interviews.map((interview) => (
-                  <TableRow key={interview.id} hover>
-                    <TableCell>
-                      {interview.candidate
-                        ? `${interview.candidate.firstName} ${interview.candidate.lastName}`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {interview.jobPosting ? interview.jobPosting.title : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={interview.type} size="small" variant="outlined" />
-                    </TableCell>
-                    <TableCell>
-                      {new Date(interview.scheduledAt).toLocaleString()}
-                    </TableCell>
-                    <TableCell>{interview.duration} min</TableCell>
-                    <TableCell>
-                      {interview.isRemote ? (
-                        <Chip label="Remote" size="small" color="info" />
-                      ) : (
-                        interview.location || "-"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={interview.status}
-                        size="small"
-                        color={getStatusColor(interview.status) as any}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        size="small"
-                        onClick={() => setFormDialog({ open: true, interview })}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Paper>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <InterviewFormDialog
         open={formDialog.open}
@@ -291,4 +288,3 @@ export default function InterviewList({
     </>
   );
 }
-

@@ -1,6 +1,6 @@
 /**
  * Invitation Form Component - TalentHR
- * Form to create new invitations
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -8,18 +8,17 @@
 import { useState } from "react";
 import {
   Box,
-  Button,
   TextField,
   MenuItem,
   Alert,
   CircularProgress,
-  Paper,
   Typography,
 } from "@mui/material";
 import { Send, Person, Email } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import ClayButton from "@/components/ui/clay-button";
 
 const invitationSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -91,19 +90,15 @@ export default function InvitationForm({ onSuccess }: InvitationFormProps) {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Invite New User
-      </Typography>
-
+    <Box>
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
           {error}
         </Alert>
       )}
 
       {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
+        <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
           Invitation created successfully! Link copied to clipboard.
         </Alert>
       )}
@@ -157,23 +152,19 @@ export default function InvitationForm({ onSuccess }: InvitationFormProps) {
           </MenuItem>
         </TextField>
 
-        <Button
+        <ClayButton
           type="submit"
           fullWidth
           variant="contained"
           disabled={loading}
-          startIcon={loading ? <CircularProgress size={20} /> : <Send />}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Send />}
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            "&:hover": {
-              background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-            },
+            background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
           }}
         >
           {loading ? "Creating..." : "Send Invitation"}
-        </Button>
+        </ClayButton>
       </Box>
-    </Paper>
+    </Box>
   );
 }
-

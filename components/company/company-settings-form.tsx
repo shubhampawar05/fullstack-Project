@@ -1,6 +1,6 @@
 /**
  * Company Settings Form Component - TalentHR
- * Form for editing company settings
+ * Soft Claymorphism Design
  */
 
 "use client";
@@ -8,10 +8,8 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Box,
-  Paper,
   Typography,
   TextField,
-  Button,
   Alert,
   CircularProgress,
   Grid,
@@ -25,6 +23,7 @@ import { Save, Business, Settings as SettingsIcon } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import ClayButton from "@/components/ui/clay-button";
 
 const companySettingsSchema = z.object({
   name: z.string().min(2, "Company name must be at least 2 characters"),
@@ -169,10 +168,12 @@ export default function CompanySettingsForm() {
   }
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-        <Business sx={{ fontSize: 32 }} color="primary" />
-        <Typography variant="h5" fontWeight={600}>
+        <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: "primary.light", color: "white" }}>
+          <Business sx={{ fontSize: 24 }} />
+        </Box>
+        <Typography variant="h5" fontWeight={700}>
           Company Information
         </Typography>
       </Box>
@@ -193,7 +194,7 @@ export default function CompanySettingsForm() {
         <Grid container spacing={3}>
           {/* Basic Information */}
           <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
               <Business fontSize="small" />
               Basic Information
             </Typography>
@@ -237,7 +238,7 @@ export default function CompanySettingsForm() {
 
           {/* Settings */}
           <Grid item xs={12} sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
               <SettingsIcon fontSize="small" />
               Company Settings
             </Typography>
@@ -309,25 +310,21 @@ export default function CompanySettingsForm() {
 
           {/* Submit Button */}
           <Grid item xs={12} sx={{ mt: 2 }}>
-            <Button
+            <ClayButton
               type="submit"
               variant="contained"
               size="large"
               disabled={saving}
-              startIcon={saving ? <CircularProgress size={20} /> : <Save />}
+              startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
               sx={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                "&:hover": {
-                  background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                },
+                background: "linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)",
               }}
             >
               {saving ? "Saving..." : "Save Changes"}
-            </Button>
+            </ClayButton>
           </Grid>
         </Grid>
       </Box>
-    </Paper>
+    </Box>
   );
 }
-
